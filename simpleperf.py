@@ -143,7 +143,7 @@ parser.add_argument('-I','--serverip',type=check_IP, default='10.0.0.2') #input 
 parser.add_argument('-t', '--time',type=check_time, default=25)
 parser.add_argument('-i','--interval',type=int)
 parser.add_argument('-p','--parallel',type=check_num_conn, default=1)
-
+parser.add_argument('-n','--num',type=str, choices=('B','KB','MB'), default='MB')
 
 
 
@@ -152,6 +152,16 @@ parser.add_argument('-p','--parallel',type=check_num_conn, default=1)
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
 args = parser.parse_args()
+
+#If -s and -c is not specified
+if (not args.server and not args.client):
+    print('Error: you must run either in server or client mode')
+    sys.exit
+
+#If both -c and -s is specified
+if (args.server and args.client):
+    print('Error: you can only run server OR client, not both.')
+    sys.exit
 
 if args.server:
     print('---------------------------------------------')
