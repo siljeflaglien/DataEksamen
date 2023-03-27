@@ -41,7 +41,7 @@ def check_format(val):
     #Hvis det kommer inn i et Spesielt format, skal jeg konvertere det?
     print
 
-
+#Checking seconds in --time argument
 def check_time(val):
     if (val<=0):
         print('The time need to be greater than 0')
@@ -49,6 +49,20 @@ def check_time(val):
     
     return val
 
+
+def check_num_conn(val):
+    try:
+        value = int(val)
+    except ValueError:
+        raise argparse.ArgumentTypeError('expected an integer but you entered a string')
+        #if not a number, sends error.
+    
+    if (value<1 or value >5):
+        print('Number of connections needs to be between 1-5')
+        sys.exit
+    
+    return value
+        
 """________________________________________________________________________________________________
                                          HANDLE SERVER
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -120,13 +134,17 @@ parser=argparse.ArgumentParser(description="Portifolio 1", epilog="end of help")
 parser.add_argument('-s', '--server', action='store_true') 
 parser.add_argument('-b','--bind',type=check_IP, default='10.0.0.2') #input IP address
 parser.add_argument('-p','--port',type=check_port, default=8088) #input Port number
-parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'))
+parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'), default='MB')
 
 
 # ----------------------- Client --------------------------
 parser.add_argument('-c', '--client', action='store_true')
 parser.add_argument('-I','--serverip',type=check_IP, default='10.0.0.2') #input IP address
 parser.add_argument('-t', '--time',type=check_time, default=25)
+parser.add_argument('-i','--interval',type=int)
+parser.add_argument('-p','--parallel',type=check_num_conn, default=1)
+
+
 
 
 """________________________________________________________________________________________________
