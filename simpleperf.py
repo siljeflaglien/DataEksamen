@@ -115,18 +115,20 @@ def handleServer(port, IP):
             
             
             receivedMB = datareceived/1000000
+            print('received B: '+str(datareceived))
             print('received MB: '+str(receivedMB))
             print('end: '+str(end))
             rate = receivedMB/end 
-
+            rate = '{0:.2f}'.format(rate)
+            receivedMB = '{0:.2f}'.format(receivedMB)
            
             #Printig out IP, Interval, Received and Rate table
             print()
             d = {str(IP)+":"+ str(port):["0.0 - 25.0", str(receivedMB)+' MB' , str(rate)+' Mbps']}
-            print ("{:<15} {:<12} {:<10} {:<10}".format('ID','Interval','Received','Rate'))
+            print ("{:<15} {:<12} {:<13} {:<10}".format('ID','Interval','Received','Rate'))
             for k, v in d.items():
                 lang, perc, change = v
-                print ("{:<15} {:<12} {:<10} {:<10}".format(k, lang, perc, change))
+                print ("{:<15} {:<12} {:<13} {:<10}".format(k, lang, perc, change))
             print()
             #End of printing table
 
@@ -136,8 +138,8 @@ def handleServer(port, IP):
             connectionSocket.send(feil.encode()) 
         
         
-        #serverSocket.close()
-        #sys.exit()#Terminate the program after sending the corresponding data
+        serverSocket.close()
+        sys.exit()#Terminate the program after sending the corresponding data
     
 
 
@@ -175,9 +177,9 @@ def handleClient(serverIP,port):
 
     #Taking the time, and sending data for the specified amout of time 
     t= time.time()
-    while (time.time() < t+5):
+    while (time.time() < t+25):
         socketClient.send(data.encode())
-    print('5 sekunder har gått')
+    print('25 sekunder har gått')
 
     socketClient.send(bye.encode()) #Sends BYE message
     message = socketClient.recv(1024).decode()
