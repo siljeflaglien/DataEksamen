@@ -3,6 +3,8 @@ import argparse
 import re
 from socket import *
 import _thread as thread
+import time
+from sys import getsizeof
 
 
 """________________________________________________________________________________________________
@@ -90,7 +92,7 @@ def handleServer(port, IP):
         try:
             connectionSocket, addr = serverSocket.accept() 
             print('Ready to serve ' , addr)
-            print('A simpleperf client with IP address:' + addr+' is connected with server IP: '+str(serverPort))
+            print('A simpleperf client with IP address:' + str(addr) +' is connected with server IP: '+ str(serverPort))
 
         except IOError:
             #Send response message for file not found
@@ -125,14 +127,30 @@ def handleClient(serverIP,port):
     clientPort = port
     host = serverIP
 
+    #Making a data packet with 1000bytes
+    data='0'*951 #the byte size will be 1000 bytes with 951
+   
+    print(str(getsizeof(data))+' bytes') #prints 1000 bytes
+    #print(data)
+    
+    #Connecting to Server
     try:
         socketClient.connect((host,clientPort))
 
     except:
+        #If not able to connect, exit system.
         print ("Connection error")
         sys.exit()
 
+    #Printing confirmation to a connected server.
     print('Client connected with '+str(host)+' port '+str(clientPort))
+
+    #Taking the time, and sending data for the specified amout of time 
+    t= time.time()
+    while (time.time() < t+5):
+        socketClient.send(data.encode())
+    print('5 sekunder har gått')
+
     print('Avslutter...')
     socketClient.close()
     exit(1)
@@ -175,6 +193,9 @@ parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'), default=
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
 args = parser.parse_args()
+
+
+    
 
 #If -s and -c is not specified
 if (not args.server and not args.client):
