@@ -1,10 +1,17 @@
 import sys 
 import argparse
+import re
 
 # CUSTOM FUNCTIONS that need to be defined before the arguments
 
 def check_IP(val):
+    #Checking that the string is in the right format
+    value = re.match('^[0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}', val)
+    if not value:
+        print("Not a valid IP address. I nedd to be in the format of: \n X.X.X.X \n Where X is a number between 0-127.")
     
+    sys.exit
+
 
 #Checking port in --port argument
 def check_port(val):
