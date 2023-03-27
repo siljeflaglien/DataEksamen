@@ -41,10 +41,15 @@ def check_format(val):
     #Hvis det kommer inn i et Spesielt format, skal jeg konvertere det?
     print
 
-
+"""________________________________________________________________________________________________
+                                         HANDLE SERVER
+    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+"""
 def handleServer(port, IP):
     serverSocket = socket(AF_INET, SOCK_STREAM) 
     serverPort = port
+    datareceived=1000
+    rate = 10
 
     try:
         #Binding socket to a IP adress and port
@@ -54,27 +59,38 @@ def handleServer(port, IP):
     
     #only one can connect
     serverSocket.listen(1) 
-    print('A simpleperf client with IP address:' + str(IP)+' is connected with server IP: '+str(serverPort))
+    print('Ready to receive... ')
 
-    sys.exit()
+    #sys.exit()
+    """
     while True:
-    #Establish the connection print('Ready to serve...') connectionSocket, addr =
+        #Establish the connection print('Ready to serve...') connectionSocket, addr =
         try:
             connectionSocket, addr = serverSocket.accept() 
             print('Ready to serve ' , addr)
+            print('A simpleperf client with IP address:' + addr+' is connected with server IP: '+str(serverPort))
 
         except IOError:
             #Send response message for file not found
             feil = "404 File Not Found"
             connectionSocket.send(feil.encode()) 
         
-     #Close client socket
+        #Close client socket
         connectionSocket.close()
         serverSocket.close()
         sys.exit()#Terminate the program after sending the corresponding data
     serverSocket.close()
-    sys.exit()#Terminate the program after sending the corresponding data
+    """
 
+    print()
+    d = {str(IP)+":"+ str(port):["0.0 - 25.0", str(datareceived)+' Mbps' , str(rate)+' Mbps']}
+    print ("{:<15} {:<12} {:<10} {:<10}".format('ID','Interval','Received','Rate'))
+    for k, v in d.items():
+        lang, perc, change = v
+        print ("{:<15} {:<12} {:<10} {:<10}".format(k, lang, perc, change))
+    print()
+
+    sys.exit()#Terminate the program after sending the corresponding data
 
 
 
