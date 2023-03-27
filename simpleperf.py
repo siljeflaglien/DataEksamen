@@ -11,6 +11,7 @@ import _thread as thread
 """
 # CUSTOM FUNCTIONS that need to be defined before the arguments
 
+#Checking Ip address inn in --bind and --serverip argument
 def check_IP(val):
     #Checking that the string is in the right format
     value = re.match('^[0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}', val)
@@ -18,8 +19,6 @@ def check_IP(val):
         print("Not a valid IP address. I nedd to be in the format of: \n X.X.X.X \n Where X is a number between 0-127.")
         sys.exit
     return val
-
-
 
 #Checking port in --port argument
 def check_port(val):
@@ -37,9 +36,18 @@ def check_port(val):
 
     return value
 
+#Checking format in --format argument
 def check_format(val):
     #Hvis det kommer inn i et Spesielt format, skal jeg konvertere det?
     print
+
+
+def check_time(val):
+    if (val<=0):
+        print('The time need to be greater than 0')
+        sys.exit
+    
+    return val
 
 """________________________________________________________________________________________________
                                          HANDLE SERVER
@@ -82,6 +90,7 @@ def handleServer(port, IP):
     serverSocket.close()
     """
 
+    #Printig out IP, Interval, Received and Rate table
     print()
     d = {str(IP)+":"+ str(port):["0.0 - 25.0", str(datareceived)+' Mbps' , str(rate)+' Mbps']}
     print ("{:<15} {:<12} {:<10} {:<10}".format('ID','Interval','Received','Rate'))
@@ -89,6 +98,7 @@ def handleServer(port, IP):
         lang, perc, change = v
         print ("{:<15} {:<12} {:<10} {:<10}".format(k, lang, perc, change))
     print()
+    #End of printing table
 
     sys.exit()#Terminate the program after sending the corresponding data
 
@@ -115,7 +125,8 @@ parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'))
 
 # ----------------------- Client --------------------------
 parser.add_argument('-c', '--client', action='store_true')
-
+parser.add_argument('-I','--serverip',type=check_IP, default='10.0.0.2') #input IP address
+parser.add_argument('-t', '--time',type=check_time, default=25)
 
 
 """________________________________________________________________________________________________
