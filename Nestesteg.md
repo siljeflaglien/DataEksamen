@@ -12,4 +12,4 @@ Det neste blir å:
  * faktisk hente inn og bruke tiden som blir satt
  * kode de andre flaggene (å sende på antall pakker isteden for tid, parallell osv...)
  * Lage kode for å skrive ut hver x sekund på client siden
- 
+ * Kode check_format?

@@ -20,7 +20,7 @@ def check_IP(val):
     if not value:
         print("Not a valid IP address. I nedd to be in the format of: \n X.X.X.X \n Where X is a number between 0-127.")
         sys.exit
-    return val
+    return val #Returning the val that was in the right format, so that it can be used
 
 #Checking port in --port argument
 def check_port(val):
@@ -36,7 +36,7 @@ def check_port(val):
         sys.exit
         #Only valid port between [1204-65535]. 
 
-    return value
+    return value #Returning the vallue because it was valid and so that it can be used
 
 #Checking format in --format argument
 def check_format(val):
@@ -49,7 +49,7 @@ def check_time(val):
         print('The time need to be greater than 0')
         sys.exit
     
-    return val
+    return val #return the time because til was positive, and so that it can be used
 
 
 def check_num_conn(val):
@@ -63,7 +63,7 @@ def check_num_conn(val):
         print('Number of connections needs to be between 1-5')
         sys.exit
     
-    return value
+    return value #returns value beacuse it was valid and so that it can be used. 
         
 """________________________________________________________________________________________________
                                          HANDLE SERVER
@@ -71,9 +71,9 @@ def check_num_conn(val):
 """
 def handleServer(port, IP):
     serverSocket = socket(AF_INET, SOCK_STREAM) 
-    serverPort = port
-    datareceived=0
-    rate = 0
+    serverPort = port #port number of the server
+    datareceived=0  #will get updated each time i receive data
+    rate = 0 #just declaring it
 
     try:
         #Binding socket to a IP adress and port
@@ -88,14 +88,13 @@ def handleServer(port, IP):
     #sys.exit()
 
     while True:
-        #Establish the connection print('Ready to serve...') connectionSocket, addr =
         try:
-            connectionSocket, addr = serverSocket.accept() 
-            print('Ready to serve ' , addr)
+            connectionSocket, addr = serverSocket.accept() #Establish the connection
+            print('Ready to serve ' , addr) #connected and ready
             print('A simpleperf client with IP address:' + str(addr) +' is connected with server IP: '+ str(serverPort))
             
-            start = time.time() #To time how long
-            end = 0
+            start = time.time() #Start time
+            end = 0 #declaring the variable
 
             while True:
                 message = connectionSocket.recv(1100).decode() #recieving the packets
@@ -106,23 +105,27 @@ def handleServer(port, IP):
                     connectionSocket.send(bye.encode())
                     #Close client socket
                     connectionSocket.close()
+                    
+                    #end = seconds passed until receiving BYE
                     end = time.time() - start
                     break
                     
                 else:
-                    #If not, we add it to how much data we have received
+                    #If not BYE, we add it to how much data we have received
                     datareceived+=getsizeof(message)
             
             
-            receivedMB = datareceived/1000000
+            receivedMB = datareceived/1000000 # from B -> MB
             print('received B: '+str(datareceived))
             print('received MB: '+str(receivedMB))
             print('end: '+str(end))
-            rate = receivedMB/end 
+            rate = receivedMB/end #calculating the rate
+
+            #sets them to only 2 decimals
             rate = '{0:.2f}'.format(rate)
             receivedMB = '{0:.2f}'.format(receivedMB)
            
-            #Printig out IP, Interval, Received and Rate table
+            #Printig out "IP, Interval, Received and Rate" table
             print()
             d = {str(IP)+":"+ str(port):["0.0 - 25.0", str(receivedMB)+' MB' , str(rate)+' Mbps']}
             print ("{:<15} {:<12} {:<13} {:<10}".format('ID','Interval','Received','Rate'))
@@ -137,30 +140,26 @@ def handleServer(port, IP):
             feil = "404 File Not Found"
             connectionSocket.send(feil.encode()) 
         
-        
+        #Closes socket, bye message has been receieved 
         serverSocket.close()
         sys.exit()#Terminate the program after sending the corresponding data
     
 
 
-   
-    serverSocket.close()
-    sys.exit()#Terminate the program after sending the corresponding data
-
 """________________________________________________________________________________________________
                                          HANDLE CLIENT
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
-def handleClient(serverIP,port):
+def handleClient(serverIP,port, sendtime):
     socketClient = socket(AF_INET, SOCK_STREAM) #Creating socket for client
-    clientPort = port
-    host = serverIP
-    bye = 'BYE'
+    clientPort = port #Port number of the server
+    host = serverIP #IP address of the server
+    bye = 'BYE' #for when we send the bye message
 
     #Making a data packet with 1000bytes
     data='0'*951 #the byte size will be 1000 bytes with 951
    
-    print(str(getsizeof(data))+' bytes') #prints 1000 bytes
+    print(str(getsizeof(data))+' bytes') #prints 1000 bytes (how many bytes the data packet is)
     #print(data)
     
     #Connecting to Server
@@ -177,9 +176,9 @@ def handleClient(serverIP,port):
 
     #Taking the time, and sending data for the specified amout of time 
     t= time.time()
-    while (time.time() < t+25):
+    while (time.time() < t+sendtime):
         socketClient.send(data.encode())
-    print('25 sekunder har gått')
+    print(str(sendtime)' sekunder har gått')
 
     socketClient.send(bye.encode()) #Sends BYE message
     message = socketClient.recv(1024).decode()
@@ -256,6 +255,6 @@ elif args.client:
     print('------------------------------------------------------------------------------------------')
     print('A simpleperf client connecting to server '+str(args.serverip)+', port '+str(args.port))
     print('------------------------------------------------------------------------------------------')
-    handleClient(args.serverip,args.port)
+    handleClient(args.serverip,args.port, args.time)
 
 sys.exit
