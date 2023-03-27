@@ -72,8 +72,8 @@ def check_num_conn(val):
 def handleServer(port, IP):
     serverSocket = socket(AF_INET, SOCK_STREAM) 
     serverPort = port
-    datareceived=1000
-    rate = 10
+    datareceived=0
+    rate = 0
 
     try:
         #Binding socket to a IP adress and port
@@ -93,28 +93,55 @@ def handleServer(port, IP):
             connectionSocket, addr = serverSocket.accept() 
             print('Ready to serve ' , addr)
             print('A simpleperf client with IP address:' + str(addr) +' is connected with server IP: '+ str(serverPort))
+            
+            start = time.time() #To time how long
+            end = 0
+
+            while True:
+                message = connectionSocket.recv(1100).decode() #recieving the packets
+                
+                #If messange is BYE, connection is closing and we send back a BYE ACK
+                if(message == 'BYE'): 
+                    bye = 'BYE ACK'
+                    connectionSocket.send(bye.encode())
+                    #Close client socket
+                    connectionSocket.close()
+                    end = time.time() - start
+                    break
+                    
+                else:
+                    #If not, we add it to how much data we have received
+                    datareceived+=getsizeof(message)
+            
+            
+            receivedMB = datareceived/1000000
+            print('received MB: '+str(receivedMB))
+            print('end: '+str(end))
+            rate = receivedMB/end 
+
+           
+            #Printig out IP, Interval, Received and Rate table
+            print()
+            d = {str(IP)+":"+ str(port):["0.0 - 25.0", str(receivedMB)+' MB' , str(rate)+' Mbps']}
+            print ("{:<15} {:<12} {:<10} {:<10}".format('ID','Interval','Received','Rate'))
+            for k, v in d.items():
+                lang, perc, change = v
+                print ("{:<15} {:<12} {:<10} {:<10}".format(k, lang, perc, change))
+            print()
+            #End of printing table
 
         except IOError:
             #Send response message for file not found
             feil = "404 File Not Found"
             connectionSocket.send(feil.encode()) 
         
-        #Close client socket
-        #connectionSocket.close()
+        
         #serverSocket.close()
         #sys.exit()#Terminate the program after sending the corresponding data
     
 
 
-    #Printig out IP, Interval, Received and Rate table
-    print()
-    d = {str(IP)+":"+ str(port):["0.0 - 25.0", str(datareceived)+' Mbps' , str(rate)+' Mbps']}
-    print ("{:<15} {:<12} {:<10} {:<10}".format('ID','Interval','Received','Rate'))
-    for k, v in d.items():
-        lang, perc, change = v
-        print ("{:<15} {:<12} {:<10} {:<10}".format(k, lang, perc, change))
-    print()
-    #End of printing table
+   
     serverSocket.close()
     sys.exit()#Terminate the program after sending the corresponding data
 
