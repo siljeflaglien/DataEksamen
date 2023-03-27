@@ -153,6 +153,7 @@ def handleClient(serverIP,port):
     socketClient = socket(AF_INET, SOCK_STREAM) #Creating socket for client
     clientPort = port
     host = serverIP
+    bye = 'BYE'
 
     #Making a data packet with 1000bytes
     data='0'*951 #the byte size will be 1000 bytes with 951
@@ -178,7 +179,13 @@ def handleClient(serverIP,port):
         socketClient.send(data.encode())
     print('5 sekunder har gått')
 
-    print('Avslutter...')
+    socketClient.send(bye.encode()) #Sends BYE message
+    message = socketClient.recv(1024).decode()
+
+    if(message == 'BYE ACK'):
+        print('Avslutter...')
+
+    
     socketClient.close()
     exit(1)
 
