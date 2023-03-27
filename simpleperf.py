@@ -84,7 +84,7 @@ def handleServer(port, IP):
     print('Ready to receive... ')
 
     #sys.exit()
-    """
+
     while True:
         #Establish the connection print('Ready to serve...') connectionSocket, addr =
         try:
@@ -98,11 +98,11 @@ def handleServer(port, IP):
             connectionSocket.send(feil.encode()) 
         
         #Close client socket
-        connectionSocket.close()
-        serverSocket.close()
-        sys.exit()#Terminate the program after sending the corresponding data
-    serverSocket.close()
-    """
+        #connectionSocket.close()
+        #serverSocket.close()
+        #sys.exit()#Terminate the program after sending the corresponding data
+    
+
 
     #Printig out IP, Interval, Received and Rate table
     print()
@@ -113,10 +113,29 @@ def handleServer(port, IP):
         print ("{:<15} {:<12} {:<10} {:<10}".format(k, lang, perc, change))
     print()
     #End of printing table
-
+    serverSocket.close()
     sys.exit()#Terminate the program after sending the corresponding data
 
+"""________________________________________________________________________________________________
+                                         HANDLE CLIENT
+    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+"""
+def handleClient(serverIP,port):
+    socketClient = socket(AF_INET, SOCK_STREAM) #Creating socket for client
+    clientPort = port
+    host = serverIP
 
+    try:
+        socketClient.connect((host,clientPort))
+
+    except:
+        print ("Connection error")
+        sys.exit()
+
+    print('Client connected with '+str(host)+' port '+str(clientPort))
+    print('Avslutter...')
+    socketClient.close()
+    exit(1)
 
 
 
@@ -132,18 +151,22 @@ parser=argparse.ArgumentParser(description="Portifolio 1", epilog="end of help")
 
 # ----------------------- Server --------------------------
 parser.add_argument('-s', '--server', action='store_true') 
-parser.add_argument('-b','--bind',type=check_IP, default='10.0.0.2') #input IP address
-parser.add_argument('-p','--port',type=check_port, default=8088) #input Port number
-parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'), default='MB')
+parser.add_argument('-b','--bind',type=check_IP, default='127.0.0.1') #input IP address
+
 
 
 # ----------------------- Client --------------------------
 parser.add_argument('-c', '--client', action='store_true')
-parser.add_argument('-I','--serverip',type=check_IP, default='10.0.0.2') #input IP address
+parser.add_argument('-I','--serverip',type=check_IP, default='127.0.0.1') #input IP address
 parser.add_argument('-t', '--time',type=check_time, default=25)
 parser.add_argument('-i','--interval',type=int)
 parser.add_argument('-p','--parallel',type=check_num_conn, default=1)
 parser.add_argument('-n','--num',type=str, choices=('B','KB','MB'), default='MB')
+
+
+# ------------------------ Both ---------------------------
+parser.add_argument('-P','--port',type=check_port, default=8088) #input Port number
+parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'), default='MB')
 
 
 
@@ -159,18 +182,23 @@ if (not args.server and not args.client):
     sys.exit
 
 #If both -c and -s is specified
-if (args.server and args.client):
+elif (args.server and args.client):
     print('Error: you can only run server OR client, not both.')
     sys.exit
 
-if args.server:
-    print('---------------------------------------------')
+elif args.server:
+    print('------------------------------------------------------------------------------------------')
     print('A simpleperf server is listening on port '+ str(args.port))
-    print('---------------------------------------------')
+    print('------------------------------------------------------------------------------------------')
 
     print('bind: '+str(args.bind))
     print('port: '+str(args.port))
     handleServer(args.port,args.bind)
     
+elif args.client:
+    print('------------------------------------------------------------------------------------------')
+    print('A simpleperf client connecting to server '+str(args.serverip)+', port '+str(args.port))
+    print('------------------------------------------------------------------------------------------')
+    handleClient(args.serverip,args.port)
 
 sys.exit
