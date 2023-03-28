@@ -79,7 +79,34 @@ def check_num_conn(val):
         sys.exit
     
     return value #returns value beacuse it was valid and so that it can be used. 
-        
+
+def check_num(val):
+    print('inne i check num')
+    size=len(val) #Size of the string writen in
+    print('Size: '+str(size))
+    format = val[size-2]+val[size-1]
+
+    #Geeting the numbers out of 
+    number=""
+    for i in range(size-2): 
+        number+=val[i]
+    
+    print('Number: '+number)
+    
+    try:
+        number=int(number)
+    except ValueError:
+        raise argparse.ArgumentTypeError('You did not only get numbers from the string --num')
+        #if not a number, sends error.
+
+    if(format=='KB'):
+        number=number*1000
+    elif(format=='MB'):
+        number=number*1000000
+
+    print('Value inne i check_num: '+str(number))
+    return number
+
 #Printing one and one row of results in --interval
 def print_table(ID, from_time , to_time, lastsize, sizesent, lasttime, nowtime,format):
     
@@ -204,16 +231,17 @@ def handleServer(port, IP, format):
                                          HANDLE CLIENT
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
-def handleClient(serverIP,port, sendtime, format, interval):
+def handleClient(serverIP,port, sendtime, format, interval, num):
     socketClient = socket(AF_INET, SOCK_STREAM) #Creating socket for client
     clientPort = port #Port number of the server
     host = serverIP #IP address of the server
     bye = 'BYE' #for when we send the bye message
     sizesent=0 #sizesent
+    sendtime=str(sendtime) #changing the seconds to a String to make it easier further down
 
     #Making a data packet with 1000bytes
-    data='0'*1000 #the byte size will be 1000 bytes with 951
-   
+    data='0'*951 #the byte size will be 1000 bytes with 951
+    datasize=getsizeof(data)
     print(str(getsizeof(data))+' bytes') #prints 1000 bytes (how many bytes the data packet is)
     #print(data)
     
@@ -233,17 +261,33 @@ def handleClient(serverIP,port, sendtime, format, interval):
 
     #Marking the time (it is in seconds)
     t= time.time()
-
+    print('Interval none:')
+    print(interval is None)
+    print('\nnum is None:')
+    print(num is None)
+    print(num)
     #If --interval not is specified
-    if interval is None:
+    if interval is None and num is None:
         #Sending data normal
-        while (time.time() < t+sendtime): #sending it for "sendtime"-amount of seonds
+        while(time.time() < t+int(sendtime)): #sending it for "sendtime"-amount of seonds
             socketClient.send(data.encode()) #Sending the data to the server
             sizesent+=getsizeof(data)
+
+       
+        print(sendtime+' seconds has passed')
         
     #If --interval is specified with seconds
+    elif num is not None:
+        print('Sending wiht --num')
+        while (sizesent+datasize <= num): #sending it for "sendtime"-amount of seonds
+            socketClient.send(data.encode()) #Sending the data to the server
+            sizesent+=datasize
+    
+    #If num is specified with how many bytes to send over. 
     else:
-        #Printing out the header row
+       
+
+         #Printing out the header row
         print('\n')
         print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Transfer','Bandwith'))
 
@@ -271,12 +315,15 @@ def handleClient(serverIP,port, sendtime, format, interval):
                 lasttime=time.time()
                 lastsize=sizesent
         
+       
+        print(sendtime+' seconds has passed')
+        print('---------------------------------------------------------------------------')
+
         
     end=time.time() #time finished sending packets
 
-    print('---------------------------------------------------------------------------')
-    sendtime=str(sendtime) #changing the seconds to a String to make it easier further down
-    print(sendtime+' seconds has passed')
+    
+    
     
     time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message
 
@@ -339,10 +386,10 @@ parser.add_argument('-b','--bind',type=check_IP, default='127.0.0.1') #input IP 
 # ----------------------- Client --------------------------
 parser.add_argument('-c', '--client', action='store_true')
 parser.add_argument('-I','--serverip',type=check_IP, default='127.0.0.1') #input IP address
-parser.add_argument('-t', '--time',type=check_time, default=25)
+parser.add_argument('-t', '--time',type=check_time, default=5)
 parser.add_argument('-i','--interval',type=int)
 parser.add_argument('-P','--parallel',type=check_num_conn, default=1)
-parser.add_argument('-n','--num',type=str, choices=('B','KB','MB'), default='MB')
+parser.add_argument('-n','--num',type=check_num, default=None)
 
 
 # ------------------------ Both ---------------------------
@@ -356,6 +403,7 @@ parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'), default=
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
 args = parser.parse_args()
+print('NUM: '+ str(args.num))
 
     
 
@@ -382,6 +430,6 @@ elif args.client:
     print('------------------------------------------------------------------------------------------')
     print('A simpleperf client connecting to server '+str(args.serverip)+', port '+str(args.port))
     print('------------------------------------------------------------------------------------------')
-    handleClient(args.serverip,args.port, int(args.time), args.format, args.interval)
+    handleClient(args.serverip,args.port, int(args.time), args.format, args.interval, args.num)
 
 sys.exit
