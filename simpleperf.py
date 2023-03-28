@@ -25,6 +25,7 @@ def check_IP(val):
 #Checking port in --port argument
 def check_port(val):
     #check if the port is a number.
+    print('Val: '+ val)
     try:
         value = int(val)
     except ValueError:
@@ -35,6 +36,8 @@ def check_port(val):
         print ("It is not a valid port")
         sys.exit
         #Only valid port between [1204-65535]. 
+    
+    print('Port Value: '+str(value))
 
     return value #Returning the vallue because it was valid and so that it can be used
 
@@ -138,7 +141,7 @@ def handleServer(port, IP):
            
             #Printig out "IP, Interval, Received and Rate" table
             print()
-            d = {str(IP)+":"+ str(port):["0.0 - "+str(rectime), str(receivedMB)+' MB' , str(rate)+' Mbps']}
+            d = {str(IP)+":"+ str(port):["0.0 - "+str(rectime)+'.0', str(receivedMB)+' MB' , str(rate)+' Mbps']}
             print ("{:<15} {:<12} {:<13} {:<10}".format('ID','Interval','Received','Rate'))
             for k, v in d.items():
                 lang, perc, change = v
@@ -194,7 +197,7 @@ def handleClient(serverIP,port, sendtime):
     sendtime=str(sendtime) #changing the seconds to a String to make it easier further down
     print(sendtime+' sekunder har gått')
 
-    time.sleep(0.2) #To separate BYE and datapackets so they dont get sendt in the same message
+    time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message
 
     socketClient.send(bye.encode()) #Sends BYE message
     #print('Sendt bye')
@@ -231,12 +234,12 @@ parser.add_argument('-c', '--client', action='store_true')
 parser.add_argument('-I','--serverip',type=check_IP, default='127.0.0.1') #input IP address
 parser.add_argument('-t', '--time',type=check_time, default=25)
 parser.add_argument('-i','--interval',type=int)
-parser.add_argument('-p','--parallel',type=check_num_conn, default=1)
+parser.add_argument('-P','--parallel',type=check_num_conn, default=1)
 parser.add_argument('-n','--num',type=str, choices=('B','KB','MB'), default='MB')
 
 
 # ------------------------ Both ---------------------------
-parser.add_argument('-P','--port',type=check_port, default=8088) #input Port number
+parser.add_argument('-p','--port',type=check_port, default=8088) #input Port number
 parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'), default='MB')
 
 
