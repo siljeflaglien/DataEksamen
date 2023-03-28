@@ -8,8 +8,8 @@ Det neste blir å:
  ----- * Telle antall pakker/Mbps/MB
  ----- * Sende en ACK bye når man har mottat bye. 
 
- * utskrift på clientside med hvor mye som har blitt sendt
- * faktisk hente inn og bruke tiden som blir satt
+ ----- * utskrift på clientside med hvor mye som har blitt sendt
+ ----- * faktisk hente inn og bruke tiden som blir satt
  * kode de andre flaggene (å sende på antall pakker isteden for tid, parallell osv...)
- * Lage kode for å skrive ut hver x sekund på client siden
- * Kode check_format?
+ ----- * Lage kode for å skrive ut hver x sekund på client siden
+ ----- * Kode check_format?
