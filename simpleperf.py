@@ -66,7 +66,7 @@ def check_time(val):
     
     return value #return the time because til was positive, and so that it can be used
 
-
+#Checking number og connections in --parallel
 def check_num_conn(val):
     try:
         value = int(val)
@@ -80,7 +80,7 @@ def check_num_conn(val):
     
     return value #returns value beacuse it was valid and so that it can be used. 
         
-
+#Printing one and one row of results in --interval
 def print_table(ID, from_time , to_time, lastsize, sizesent, lasttime, nowtime,format):
     
     #Size of the interval
@@ -139,17 +139,21 @@ def handleServer(port, IP, format):
             rectime = 0
 
             while True:
+               
                 message = connectionSocket.recv(1100).decode() #recieving the packets
-                print('Message: '+message+ '\n\n')
+                #print('Message: '+message+ '\n\n') #Printing messages/Packets got
+                
                 #If messange is BYE, connection is closing and we send back a BYE ACK
                 if(message == 'BYE'): 
-                    print('got BYE')
-                    rectime = connectionSocket.recv(1100).decode() #recieving the packets
-                    rectime= int(rectime)
-                    print("RECEIVED TIME: "+ str(rectime))
-                    bye = 'BYE ACK'
-                    connectionSocket.send(bye.encode())
-                    #Close client socket
+                    
+                    #recieving --time the data sent, so that i can have the right interval in the results
+                    rectime = connectionSocket.recv(1100).decode() 
+                    
+                    #Sending ack message
+                    bye = 'BYE ACK' #Making the ack message
+                    connectionSocket.send(bye.encode()) #Sending the ack
+
+                    #Closing the client socket
                     connectionSocket.close()
                     
                     #end = seconds passed until receiving BYE
@@ -157,14 +161,16 @@ def handleServer(port, IP, format):
                     break
                     
                 else:
-                    #If not BYE, we add it to how much data we have received
+                    #If not BYE, we got a normal package and add the bytes to how much data we have received
                     datareceived+=getsizeof(message)
             
+
              # ----------------------- PRINTING RESULTS ----------------------------
+            
             receivedMB = check_format(datareceived, 'MB') # from B -> MB
-            print('received B: '+str(datareceived))
-            print('received MB: '+str(receivedMB))
-            print('end: '+str(end))
+            #print('received B: '+str(datareceived)) #Data received in B
+            #print('received MB: '+str(receivedMB)) #Data received in MB
+            print('end: '+str(end)) #Printing End time, how long it used
             rate = receivedMB/end #calculating the rate
 
             transferformat=check_format(datareceived,format) #Changing to the chosen format from --format
