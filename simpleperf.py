@@ -45,11 +45,17 @@ def check_format(val):
 
 #Checking seconds in --time argument
 def check_time(val):
-    if (val<=0):
+    try:
+        value = int(val)
+    except ValueError:
+        raise argparse.ArgumentTypeError('expected an integer but you entered a string')
+        #if not a number, sends error.
+
+    if (value<=0):
         print('The time need to be greater than 0')
         sys.exit
     
-    return val #return the time because til was positive, and so that it can be used
+    return value #return the time because til was positive, and so that it can be used
 
 
 def check_num_conn(val):
@@ -178,7 +184,8 @@ def handleClient(serverIP,port, sendtime):
     t= time.time()
     while (time.time() < t+sendtime):
         socketClient.send(data.encode())
-    print(str(sendtime)' sekunder har gått')
+
+    print(str(sendtime)+' sekunder har gått')
 
     socketClient.send(bye.encode()) #Sends BYE message
     message = socketClient.recv(1024).decode()
@@ -229,7 +236,6 @@ parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'), default=
 """
 args = parser.parse_args()
 
-
     
 
 #If -s and -c is not specified
@@ -255,6 +261,6 @@ elif args.client:
     print('------------------------------------------------------------------------------------------')
     print('A simpleperf client connecting to server '+str(args.serverip)+', port '+str(args.port))
     print('------------------------------------------------------------------------------------------')
-    handleClient(args.serverip,args.port, args.time)
+    handleClient(args.serverip,args.port, int(args.time))
 
 sys.exit
