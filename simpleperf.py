@@ -80,6 +80,32 @@ def check_num_conn(val):
     
     return value #returns value beacuse it was valid and so that it can be used. 
         
+
+def print_table(ID, from_time , to_time, lastsize, sizesent, lasttime, nowtime,format):
+    
+    #Size of the interval
+    size=sizesent-lastsize #how much sent in the past interval
+    transferformat=check_format(size,format) #Changing the format
+
+    #time of the interval
+    interval_time = nowtime-lasttime #How much time has past, need for calculating bandwidth
+
+    #Bandwidth of the interval
+    sizeMB = check_format(size,'MB') # changing into MB to calculate bandwidth
+    bandwidth=float(sizeMB)/float(interval_time) # Bandwidth
+   
+    #sets them to only 2 decimals
+    bandwidth = '{0:.2f}'.format(bandwidth)
+    transferformat = '{0:.2f}'.format(transferformat)
+
+    #Printing out a new row in the table
+    d = {ID:[str(from_time)+".0 - "+str(to_time)+'.0', str(transferformat)+' '+format , str(bandwidth)+' Mbps']}
+    for k, v in d.items():
+        lang, perc, change = v
+        print ("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))
+    print()
+    
+
 """________________________________________________________________________________________________
                                          HANDLE SERVER
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -172,7 +198,7 @@ def handleServer(port, IP, format):
                                          HANDLE CLIENT
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
-def handleClient(serverIP,port, sendtime, format):
+def handleClient(serverIP,port, sendtime, format, interval):
     socketClient = socket(AF_INET, SOCK_STREAM) #Creating socket for client
     clientPort = port #Port number of the server
     host = serverIP #IP address of the server
@@ -188,7 +214,6 @@ def handleClient(serverIP,port, sendtime, format):
     #Connecting to Server
     try:
         socketClient.connect((host,clientPort))
-
     except:
         #If not able to connect, exit system.
         print ("Connection error")
@@ -197,17 +222,55 @@ def handleClient(serverIP,port, sendtime, format):
     #Printing confirmation to a connected server.
     print('Client connected with '+str(host)+' port '+str(clientPort))
 
+    #Printing header for interval printing. --interval
+    
+
     #Marking the time (it is in seconds)
     t= time.time()
 
-    while (time.time() < t+sendtime): #sending it for "sendtime"-amount of seonds
-        socketClient.send(data.encode()) #Sending the data to the server
-        sizesent+=getsizeof(data)
-    
+    #If --interval not is specified
+    if interval is None:
+        #Sending data normal
+        while (time.time() < t+sendtime): #sending it for "sendtime"-amount of seonds
+            socketClient.send(data.encode()) #Sending the data to the server
+            sizesent+=getsizeof(data)
+        
+    #If --interval is specified with seconds
+    else:
+        #Printing out the header row
+        print('\n')
+        print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Transfer','Bandwith'))
+
+        #Variables used i printing results in case of --interval
+        from_time=0 #starting the intervals
+        to_time=interval #how long the interval lasted
+        ID=str(serverIP)+":"+ str(port) #ID used in the table
+        lasttime=t #What time the last interval ended at
+        lastsize=0 #How many bytes was sent in total last interval
+
+        #A while who sends data and sends prints results at the right interval
+        while (time.time() < t+sendtime): #sending it for "sendtime"-amount of seonds
+
+            socketClient.send(data.encode()) #Sending the data to the server
+            sizesent+=getsizeof(data) #adding to bytes sent
+
+            #If it has n seconds (interval) then we print out the results
+            if(time.time()>=t+to_time):
+                #Method that print one and one row of data results
+                print_table(ID,from_time,to_time,lastsize,sizesent,lasttime,time.time(),format)
+                
+                #Updating variables used in print table
+                to_time+=interval #from what seconds the interval begins 2.0 - 4.0, this is 2.0
+                from_time+=interval #this was 2.0, but got now updated to 4.0 (if interval is 2 seconds)
+                lasttime=time.time()
+                lastsize=sizesent
+        
+        
+    end=time.time() #time finished sending packets
+
+    print('---------------------------------------------------------------------------')
     sendtime=str(sendtime) #changing the seconds to a String to make it easier further down
     print(sendtime+' sekunder har gått')
-
-    end=time.time() #time finished sending packets
     
     time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message
 
@@ -223,7 +286,7 @@ def handleClient(serverIP,port, sendtime, format):
         socketClient.close() 
     
 
-    # --------------------- PRINTING RESULTS --------------------------
+    # --------------------------------------- PRINTING RESULTS --------------------------------------------------
     #Calculating bandwidth
     totaltduration=end-t #gives totalt duration of sending
     sizeMB=check_format(sizesent,'MB') #Gives the size sent in MB instead of B
@@ -313,6 +376,6 @@ elif args.client:
     print('------------------------------------------------------------------------------------------')
     print('A simpleperf client connecting to server '+str(args.serverip)+', port '+str(args.port))
     print('------------------------------------------------------------------------------------------')
-    handleClient(args.serverip,args.port, int(args.time), args.format)
+    handleClient(args.serverip,args.port, int(args.time), args.format, args.interval)
 
 sys.exit
