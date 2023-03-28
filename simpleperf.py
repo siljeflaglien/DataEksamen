@@ -270,7 +270,7 @@ def handleClient(serverIP,port, sendtime, format, interval):
 
     print('---------------------------------------------------------------------------')
     sendtime=str(sendtime) #changing the seconds to a String to make it easier further down
-    print(sendtime+' sekunder har gått')
+    print(sendtime+' seconds has passed')
     
     time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message
 
@@ -280,7 +280,7 @@ def handleClient(serverIP,port, sendtime, format, interval):
     message = socketClient.recv(1024).decode() #Recieving ACK message.
 
     if(message == 'BYE ACK'):
-        print('Avslutter...')
+        print('Exits...')
 
         #Closing and exiing 
         socketClient.close() 
@@ -291,10 +291,10 @@ def handleClient(serverIP,port, sendtime, format, interval):
     totaltduration=end-t #gives totalt duration of sending
     sizeMB=check_format(sizesent,'MB') #Gives the size sent in MB instead of B
     bandwidth=sizeMB/totaltduration #The bandwith calculated in Mbps
-    print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB')
+    #print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB') # REMOVE
 
     transferformat=check_format(sizesent,format) #Changing to the chosen format from --format
-    print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB\nSize KB: '+str(transferformat))
+    #print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB\nSize KB: '+str(transferformat)) #REMOVE
 
     #sets them to only 2 decimals
     bandwidth = '{0:.2f}'.format(bandwidth)
