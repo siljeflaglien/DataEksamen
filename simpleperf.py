@@ -101,12 +101,17 @@ def handleServer(port, IP):
             
             start = time.time() #Start time
             end = 0 #declaring the variable
+            rectime = 0
 
             while True:
                 message = connectionSocket.recv(1100).decode() #recieving the packets
-                
+                print('Message: '+message+ '\n\n')
                 #If messange is BYE, connection is closing and we send back a BYE ACK
                 if(message == 'BYE'): 
+                    print('got BYE')
+                    rectime = connectionSocket.recv(1100).decode() #recieving the packets
+                    rectime= int(rectime)
+                    print("RECEIVED TIME: "+ str(rectime))
                     bye = 'BYE ACK'
                     connectionSocket.send(bye.encode())
                     #Close client socket
@@ -133,7 +138,7 @@ def handleServer(port, IP):
            
             #Printig out "IP, Interval, Received and Rate" table
             print()
-            d = {str(IP)+":"+ str(port):["0.0 - 25.0", str(receivedMB)+' MB' , str(rate)+' Mbps']}
+            d = {str(IP)+":"+ str(port):["0.0 - "+str(rectime), str(receivedMB)+' MB' , str(rate)+' Mbps']}
             print ("{:<15} {:<12} {:<13} {:<10}".format('ID','Interval','Received','Rate'))
             for k, v in d.items():
                 lang, perc, change = v
@@ -180,22 +185,28 @@ def handleClient(serverIP,port, sendtime):
     #Printing confirmation to a connected server.
     print('Client connected with '+str(host)+' port '+str(clientPort))
 
-    #Taking the time, and sending data for the specified amout of time 
+    #Marking the time (it is in seconds)
     t= time.time()
-    while (time.time() < t+sendtime):
-        socketClient.send(data.encode())
 
-    print(str(sendtime)+' sekunder har gått')
+    while (time.time() < t+sendtime): #sending it for "sendtime"-amount of seonds
+        socketClient.send(data.encode()) #Sending the data to the server
+    
+    sendtime=str(sendtime) #changing the seconds to a String to make it easier further down
+    print(sendtime+' sekunder har gått')
+
+    time.sleep(0.2) #To separate BYE and datapackets so they dont get sendt in the same message
 
     socketClient.send(bye.encode()) #Sends BYE message
-    message = socketClient.recv(1024).decode()
+    #print('Sendt bye')
+    socketClient.send(sendtime.encode()) #Sends timeinterval, seconds packets got sendt.
+    message = socketClient.recv(1024).decode() #Recieving ACK message.
 
     if(message == 'BYE ACK'):
         print('Avslutter...')
 
-    
-    socketClient.close()
-    exit(1)
+        #Closing and exiing 
+        socketClient.close() 
+        exit(1)
 
 
 
