@@ -25,7 +25,7 @@ def check_IP(val):
 #Checking port in --port argument
 def check_port(val):
     #check if the port is a number.
-    print('Val: '+ val)
+    #print('Val: '+ val) #REMOVE
     try:
         value = int(val)
     except ValueError:
@@ -37,7 +37,7 @@ def check_port(val):
         sys.exit
         #Only valid port between [1204-65535]. 
     
-    print('Port Value: '+str(value))
+    #print('Port Value: '+str(value)) #REMOVE
 
     return value #Returning the vallue because it was valid and so that it can be used
 
@@ -81,9 +81,9 @@ def check_num_conn(val):
     return value #returns value beacuse it was valid and so that it can be used. 
 
 def check_num(val):
-    print('inne i check num')
+    #print('inne i check num') #REMOVE
     size=len(val) #Size of the string writen in
-    print('Size: '+str(size))
+    #print('Size: '+str(size)) #REMOVE
     format = val[size-2]+val[size-1]
 
     #Geeting the numbers out of 
@@ -242,7 +242,7 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     #Making a data packet with 1000bytes
     data='0'*951 #the byte size will be 1000 bytes with 951
     datasize=getsizeof(data)
-    print(str(getsizeof(data))+' bytes') #prints 1000 bytes (how many bytes the data packet is)
+    #print(str(getsizeof(data))+' bytes') #prints 1000 bytes (how many bytes the data packet is) #REMOVE
     #print(data)
     
     #Connecting to Server
@@ -372,12 +372,14 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
 """
 
 #Each thread will do this function.
-def handle_thread(connectionSocket, addr):
+def handle_thread(connectionSocket, addr, IP, port):
     while True:
         try:
+            print('Prøver med connection: '+str(addr))
             start = time.time() #Start time
             end = 0 #declaring the variable
             rectime = 0
+            datareceived=0
 
             while True:
                
@@ -404,6 +406,7 @@ def handle_thread(connectionSocket, addr):
                 else:
                     #If not BYE, we got a normal package and add the bytes to how much data we have received
                     datareceived+=getsizeof(message)
+                    #print( 'Message: '+message+'\n\n') #REMOVE
             
 
              # ----------------------- PRINTING RESULTS ----------------------------
@@ -436,7 +439,7 @@ def handle_thread(connectionSocket, addr):
             connectionSocket.send(feil.encode()) 
         
         #Closes socket, bye message has been receieved 
-        serverSocket.close()
+        connectionSocket.close()
         sys.exit()#Terminate the program after sending the corresponding data
 
 #Making a server that accepts multiple threads
@@ -453,7 +456,7 @@ def thread_server(serverIP, serverPort):
     except:
         print("Bind failed. Error : ")
 
-    serverSocket.listen(1) 
+    serverSocket.listen(5) 
     print('Server is ready to recieve')
 
     while True:
@@ -462,11 +465,123 @@ def thread_server(serverIP, serverPort):
         print('Ready to serve ' , addr) #connected and ready
         print('A simpleperf client with IP address:' + str(addr) +' is connected with server IP: '+ str(serverPort))
 
-        thread.start_new_thread(handle_thread, (connectionSocket, addr))
+        print('Oppretter ny thread, connection: '+str(addr))
+        print(connectionSocket)
+        thread.start_new_thread(handle_thread, (connectionSocket, addr,serverIP,serverPort))
+    
+    
 
 
-def thread_conn(serverIP, port, num_connections):
-    print 
+def thread_conn(serverIP, port, sendtime, format, interval, num, num_connections):
+    socketClient = socket(AF_INET, SOCK_STREAM) #Creating socket for client
+    clientPort = port #Port number of the server
+    host = serverIP #IP address of the server
+    bye = 'BYE' #for when we send the bye message
+    sizesent=0 #sizesent
+    sendtime=str(sendtime) #changing the seconds to a String to make it easier further down
+
+    #Making a data packet with 1000bytes
+    data='0'*951 #the byte size will be 1000 bytes with 951
+    datasize=getsizeof(data)
+    #print(str(getsizeof(data))+' bytes') #prints 1000 bytes (how many bytes the data packet is) #REMOVE
+    #print(data)
+    
+    for i in range(1,num_connections+1):
+        #Connecting to Server
+        try:
+            hei = socketClient.connect((host,clientPort))
+            print(hei)
+        except:
+            #If not able to connect, exit system.
+            print ("Connection error")
+            sys.exit()
+
+        #Printing confirmation to a connected server.
+        print('Client '+str(serverIP)+":"+ str(port)+' connected with '+str(host)+' port '+str(clientPort))
+    
+
+    #Marking the time (it is in seconds)
+    t= time.time()
+
+
+    #Printing out the header row
+    print('\n')
+    print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Transfer','Bandwith'))
+
+    #Variables used i printing results in case of --interval
+    from_time=0 #starting the intervals
+    to_time=interval #how long the interval lasted
+    ID=str(serverIP)+":"+ str(port) #ID used in the table
+    lasttime=t #What time the last interval ended at
+    lastsize=0 #How many bytes was sent in total last interval
+
+    #A while who sends data and sends prints results at the right interval
+    while (time.time() < t+sendtime): #sending it for "sendtime"-amount of seonds
+
+        socketClient.send(data.encode()) #Sending the data to the server
+        sizesent+=getsizeof(data) #adding to bytes sent
+
+        #If it has n seconds (interval) then we print out the results
+        if(time.time()>=t+to_time):
+            #Method that print one and one row of data results
+            print_table(ID,from_time,to_time,lastsize,sizesent,lasttime,time.time(),format)
+            
+            #Updating variables used in print table
+            to_time+=interval #from what seconds the interval begins 2.0 - 4.0, this is 2.0
+            from_time+=interval #this was 2.0, but got now updated to 4.0 (if interval is 2 seconds)
+            lasttime=time.time()
+            lastsize=sizesent
+    
+    
+    print(sendtime+' seconds has passed')
+    print('---------------------------------------------------------------------------')
+
+        
+    end=time.time() #time finished sending packets
+
+    
+    
+    
+    time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message
+
+    socketClient.send(bye.encode()) #Sends BYE message
+    #print('Sendt bye')
+    socketClient.send(sendtime.encode()) #Sends timeinterval, seconds packets got sendt.
+    message = socketClient.recv(1024).decode() #Recieving ACK message.
+
+    if(message == 'BYE ACK'):
+        print('Exits...')
+
+        #Closing and exiing 
+        socketClient.close() 
+    
+
+    # --------------------------------------- PRINTING RESULTS --------------------------------------------------
+    #Calculating bandwidth
+    totaltduration=end-t #gives totalt duration of sending
+    sizeMB=check_format(sizesent,'MB') #Gives the size sent in MB instead of B
+    bandwidth=sizeMB/totaltduration #The bandwith calculated in Mbps
+    #print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB') # REMOVE
+
+    transferformat=check_format(sizesent,format) #Changing to the chosen format from --format
+    #print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB\nSize KB: '+str(transferformat)) #REMOVE
+
+    #sets them to only 2 decimals
+    bandwidth = '{0:.2f}'.format(bandwidth)
+    transferformat = '{0:.2f}'.format(transferformat)
+
+    #Printig out "IP, Interval, Transfer and Bandwisth" table
+    print()
+    d = {str(serverIP)+":"+ str(port):["0.0 - "+str(sendtime)+'.0', str(transferformat)+' '+format , str(bandwidth)+' Mbps']}
+    print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Transfer','Bandwith'))
+    for k, v in d.items():
+        lang, perc, change = v
+        print ("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))
+    print()
+    #End of printing table
+
+    exit(1)
+        
 
 """________________________________________________________________________________________________
                                          ADDING ARGUMENTS
@@ -479,6 +594,7 @@ parser=argparse.ArgumentParser(description="Portifolio 1", epilog="end of help")
 # ----------------------- Server --------------------------
 parser.add_argument('-s', '--server', action='store_true') 
 parser.add_argument('-b','--bind',type=check_IP, default='127.0.0.1') #input IP address
+parser.add_argument('-T','--thread',action='store_true')
 
 
 
@@ -502,7 +618,7 @@ parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'), default=
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
 args = parser.parse_args()
-print('NUM: '+ str(args.num))
+#print('NUM: '+ str(args.num)) #REMOVE
 
     
 
@@ -516,8 +632,20 @@ elif (args.server and args.client):
     print('Error: you can only run server OR client, not both.')
     sys.exit
 
+elif(args.thread):
+    print('------------------------------------------------------------------------------------------')
+    print('A simpleperf server is listening on port '+ str(args.port))
+    print('------------------------------------------------------------------------------------------')
+
+    thread_server(args.serverip, args.port)
+
 elif(int(args.parallel) > 1):
-    thread_server(args.serverip, args.port, int(args.parallel))
+    print('Inne i args parallell')
+    print('------------------------------------------------------------------------------------------')
+    print('A simpleperf client connecting to server '+str(args.serverip)+', port '+str(args.port))
+    print('------------------------------------------------------------------------------------------')
+
+    thread_conn(args.serverip,args.port, int(args.time), args.format, args.interval, args.num, int(args.parallel))
 
 elif args.server:
     print('------------------------------------------------------------------------------------------')
