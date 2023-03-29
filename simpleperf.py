@@ -78,6 +78,7 @@ def check_num_conn(val):
     if (value<1 or value >5):
         print('Number of connections needs to be between 1-5')
         sys.exit
+        exit(1)
     
     return value #returns value beacuse it was valid and so that it can be used. 
 
@@ -300,7 +301,7 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
         lastsize=0 #How many bytes was sent in total last interval
 
         #A while who sends data and sends prints results at the right interval
-        while (time.time() < t+sendtime): #sending it for "sendtime"-amount of seonds
+        while (time.time() < int(t)+int(sendtime)): #sending it for "sendtime"-amount of seonds
 
             socketClient.send(data.encode()) #Sending the data to the server
             sizesent+=getsizeof(data) #adding to bytes sent
@@ -371,6 +372,8 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
                                             THREAD
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
+global utskrift
+utskrift=[]
 
 #Each thread will do this function.
 def handle_thread_server(connectionSocket, addr, IP, port,format):
@@ -505,12 +508,6 @@ def handle_thread_client(serverIP, port, sendtime, format):
         sys.exit()
 
     #print('Client'+' : '+str(serverIP)+":"+ str(port)+' connected with '+str(serverIP)+' port '+str(port)) #REMOVE?
-
-    
-
-
-    
-  
     
     #Marking the time (it is in seconds)
     t= time.time()
@@ -541,7 +538,7 @@ def handle_thread_client(serverIP, port, sendtime, format):
     message = socketClient.recv(1024).decode() #Recieving ACK message.
 
     if(message == 'BYE ACK'):
-        print('Exits...')
+       #print('Exits...')
 
         #Closing and exiing 
         socketClient.close() 
@@ -562,16 +559,16 @@ def handle_thread_client(serverIP, port, sendtime, format):
     transferformat = '{0:.2f}'.format(transferformat)
 
     #Printig out "IP, Interval, Transfer and Bandwisth" table
-    #print() #REMOVE
-    printing=''
+
     d = {str(serverIP)+":"+ str(port):["0.0 - "+str(sendtime)+'.0', str(transferformat)+' '+format , str(bandwidth)+' Mbps']}
     #print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Transfer','Bandwith')) #REMOVE?
+    table=''
     for k, v in d.items():
         lang, perc, change = v
-        print("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))
+        table=("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))+'\n'
     #print('Adding the results to printing') #REMOVE
-    print()
-    #return 'Hei'
+    utskrift.append(table)
+    #print(table)
     #End of printing table
 
 
@@ -579,20 +576,21 @@ def handle_thread_client(serverIP, port, sendtime, format):
 
 
 def thread_conn(serverIP, port, sendtime, format, interval, num_connections):
-    printing = ''
-    client_thread_list=[]
+    printing=utskrift
+    print('\n')
+    #client_thread_list=[]
     for i in range(num_connections):
         #Connecting to Server
         #print('Pørver å lage ny connection') #REMOVE
         print('Client nr '+str(i)+' : '+str(serverIP)+":"+ str(port)+' connected with '+str(serverIP)+' port '+str(port))
         try:
-            
-            client_thread=threading.Thread(target=handle_thread_client(serverIP, port, sendtime, format)).start()
-            #client_thread.start()
+            client_thread=threading.Thread(target=handle_thread_client(serverIP, port, sendtime, format))
+            client_thread.start()
+            client_thread.join()
             #Printing confirmation to a connected server.
             #print('CLIENT THREAD: \n'+client_thread))
             #printing+=client_thread
-            client_thread_list.append(client_thread)
+            #client_thread_list.append(client_thread)
             
             
             
@@ -607,7 +605,9 @@ def thread_conn(serverIP, port, sendtime, format, interval, num_connections):
     #for client_thread in client_thread_list:
     #    client_thread.join()
 
-    #print(printing)
+    for results in printing:
+        print(results)
+    printing=[]
     exit(1) 
     
 
