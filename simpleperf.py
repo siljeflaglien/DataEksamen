@@ -366,8 +366,107 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     exit(1)
 
 
+"""________________________________________________________________________________________________
+                                            THREAD
+    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+"""
+
+#Each thread will do this function.
+def handle_thread(connectionSocket, addr):
+    while True:
+        try:
+            start = time.time() #Start time
+            end = 0 #declaring the variable
+            rectime = 0
+
+            while True:
+               
+                message = connectionSocket.recv(1100).decode() #recieving the packets
+                #print('Message: '+message+ '\n\n') #Printing messages/Packets got
+                
+                #If messange is BYE, connection is closing and we send back a BYE ACK
+                if(message == 'BYE'): 
+                    
+                    #recieving --time the data sent, so that i can have the right interval in the results
+                    rectime = connectionSocket.recv(1100).decode() 
+                    
+                    #Sending ack message
+                    bye = 'BYE ACK' #Making the ack message
+                    connectionSocket.send(bye.encode()) #Sending the ack
+
+                    #Closing the client socket
+                    connectionSocket.close()
+                    
+                    #end = seconds passed until receiving BYE
+                    end = time.time() - start
+                    break
+                    
+                else:
+                    #If not BYE, we got a normal package and add the bytes to how much data we have received
+                    datareceived+=getsizeof(message)
+            
+
+             # ----------------------- PRINTING RESULTS ----------------------------
+            
+            receivedMB = check_format(datareceived, 'MB') # from B -> MB
+            #print('received B: '+str(datareceived)) #Data received in B
+            #print('received MB: '+str(receivedMB)) #Data received in MB
+            print('end: '+str(end)) #Printing End time, how long it used
+            rate = receivedMB/end #calculating the rate
+
+            transferformat=check_format(datareceived,format) #Changing to the chosen format from --format
+
+            #sets them to only 2 decimals
+            rate = '{0:.2f}'.format(rate)
+            transferformat = '{0:.2f}'.format(transferformat)
+           
+            #Printig out "IP, Interval, Received and Rate" table
+            print()
+            d = {str(IP)+":"+ str(port):["0.0 - "+str(rectime)+'.0', str(transferformat)+' '+format , str(rate)+' Mbps']}
+            print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Received','Rate'))
+            for k, v in d.items():
+                lang, perc, change = v
+                print ("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))
+            print()
+            #End of printing table
+
+        except IOError:
+            #Send response message for file not found
+            feil = "404 File Not Found"
+            connectionSocket.send(feil.encode()) 
+        
+        #Closes socket, bye message has been receieved 
+        serverSocket.close()
+        sys.exit()#Terminate the program after sending the corresponding data
+
+#Making a server that accepts multiple threads
+def thread_server(serverIP, serverPort):
+    #IP address of the server and port get sent in
+    
+    #Setting up TCP connection
+    serverSocket = socket(AF_INET, SOCK_STREAM) 
+     
+
+    try:
+        #Binder socket til en spesifikk IP-adresse og Port
+        serverSocket.bind((serverIP, serverPort)) 
+    except:
+        print("Bind failed. Error : ")
+
+    serverSocket.listen(1) 
+    print('Server is ready to recieve')
+
+    while True:
+        #Establish the connection print('Ready to serve...') connectionSocket, addr =
+        connectionSocket, addr = serverSocket.accept() #Establish the connection
+        print('Ready to serve ' , addr) #connected and ready
+        print('A simpleperf client with IP address:' + str(addr) +' is connected with server IP: '+ str(serverPort))
+
+        thread.start_new_thread(handle_thread, (connectionSocket, addr))
 
 
+def thread_conn(serverIP, port, num_connections):
+    print 
 
 """________________________________________________________________________________________________
                                          ADDING ARGUMENTS
@@ -416,6 +515,9 @@ if (not args.server and not args.client):
 elif (args.server and args.client):
     print('Error: you can only run server OR client, not both.')
     sys.exit
+
+elif(int(args.parallel) > 1):
+    thread_server(args.serverip, args.port, int(args.parallel))
 
 elif args.server:
     print('------------------------------------------------------------------------------------------')

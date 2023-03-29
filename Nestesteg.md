@@ -13,3 +13,11 @@ Det neste blir å:
  * kode de andre flaggene (å sende på antall pakker isteden for tid, parallell osv...)
  ----- * Lage kode for å skrive ut hver x sekund på client siden
  ----- * Kode check_format?
+
+ * Hvordan lage forskjell mellom når man kjører threadserver og vanlig server. 
+    * Den forskjellen skal skje når man kjører server, ikke client, det er noe eget. 
+
+        Må lage noe som tilsier at man kjører thread på server, kodene for det server thread er laget.
+        Må lage en kode på client siden som lager antall connecions/cleints som det tallet som ble sendt inn. Og som derretter prøver å koble seg til. Er det bare å lage en forløkke som sender inn connections? Eller venter til en connection er ferdig da?
+
+        
