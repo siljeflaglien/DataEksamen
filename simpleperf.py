@@ -457,9 +457,13 @@ def thread_server(serverIP, serverPort):
         print("Bind failed. Error : ")
 
     serverSocket.listen(5) 
-    print('Server is ready to recieve')
+    print("socket is listening and ready to receive")
+    #print('Server is ready to recieve')
 
+    conn=1
     while True:
+        print('Prøver på connection nr: '+str(conn))
+        ++conn
         #Establish the connection print('Ready to serve...') connectionSocket, addr =
         connectionSocket, addr = serverSocket.accept() #Establish the connection
         print('Ready to serve ' , addr) #connected and ready
@@ -490,14 +494,16 @@ def thread_conn(serverIP, port, sendtime, format, interval, num, num_connections
         #Connecting to Server
         try:
             hei = socketClient.connect((host,clientPort))
+            print('HEI: ')
             print(hei)
+            print('')
         except:
             #If not able to connect, exit system.
             print ("Connection error")
             sys.exit()
 
         #Printing confirmation to a connected server.
-        print('Client '+str(serverIP)+":"+ str(port)+' connected with '+str(host)+' port '+str(clientPort))
+        print('Client '+str(i)+' : '+str(serverIP)+":"+ str(port)+' connected with '+str(host)+' port '+str(clientPort))
     
 
     #Marking the time (it is in seconds)

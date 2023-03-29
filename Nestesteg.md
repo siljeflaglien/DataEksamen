@@ -20,4 +20,4 @@ Det neste blir å:
         Må lage noe som tilsier at man kjører thread på server, kodene for det server thread er laget.
         Må lage en kode på client siden som lager antall connecions/cleints som det tallet som ble sendt inn. Og som derretter prøver å koble seg til. Er det bare å lage en forløkke som sender inn connections? Eller venter til en connection er ferdig da?
 
-        
+        Må jeg sende alle pakkene fra client, før jeg kan starte opp connection nr 2? Hvordan blir det på client siden?
