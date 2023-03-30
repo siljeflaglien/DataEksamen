@@ -379,7 +379,7 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
 def handle_thread_server(connectionSocket, addr, IP, port,format):
     while True:
         try:
-            print('Prøver med connection: '+str(addr))
+            #print('Prøver med connection: '+str(addr)) #REMOVE
             start = time.time() #Start time
             end = 0 #declaring the variable
             rectime = 0
@@ -391,7 +391,7 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
                 #print('Message: '+message+ '\n\n') #Printing messages/Packets got
                 
                 #If messange is BYE, connection is closing and we send back a BYE ACK
-                if(message == 'BYE'): 
+                if('BYE' in message): 
                     
                     #recieving --time the data sent, so that i can have the right interval in the results
                     rectime = connectionSocket.recv(1100).decode() 
@@ -416,9 +416,9 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
              # ----------------------- PRINTING RESULTS ----------------------------
             
             receivedMB = check_format(datareceived, 'MB') # from B -> MB
-            #print('received B: '+str(datareceived)) #Data received in B
-            #print('received MB: '+str(receivedMB)) #Data received in MB
-            print('end: '+str(end)) #Printing End time, how long it used
+            #print('received B: '+str(datareceived)) #Data received in B #REMOVE
+            #print('received MB: '+str(receivedMB)) #Data received in MB #REMOVE
+            #print('end: '+str(end)) #Printing End time, how long it used #REMOVE
             rate = receivedMB/end #calculating the rate
 
             transferformat=check_format(datareceived,format) #Changing to the chosen format from --format
@@ -438,13 +438,8 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
             #End of printing table
 
         except IOError:
-            #Send response message for file not found
-            feil = "404 File Not Found"
-            connectionSocket.send(feil.encode()) 
-        
-        #Closes socket, bye message has been receieved 
-        connectionSocket.close()
-        sys.exit()#Terminate the program after sending the corresponding data
+            #If the sockets listened to more connections, but no connections came, it goes in this except
+            sys.exit()# And we terminate the listening for this connection. 
 
 
 #------------------------------------------------------------------------------------------------
@@ -465,19 +460,21 @@ def thread_server(serverIP, serverPort,format):
         print("Bind failed. Error : ")
 
     serverSocket.listen(5) 
-    print("socket is listening and ready to receive")
+    print('\nSocket is listening and ready to receive\n')
+    print('------------------------------------------------------------------------------------------')
    
 
     conn=1
     while True:
-        print('Prøver på connection nr: '+str(conn))
+        #print('Prøver på connection nr: '+str(conn))
+        print()
         conn+=1
         #Establish the connection print('Ready to serve...') connectionSocket, addr =
         connectionSocket, addr = serverSocket.accept() #Establish the connection
         print('A simpleperf client with IP address:' + str(addr) +' is connected with server IP: '+ str(serverPort))#connected and ready
 
-        print('\n\n')
         thread.start_new_thread(handle_thread_server, (connectionSocket, addr,serverIP,serverPort,format))
+    
     
     
 def handle_thread_client(serverIP, port, sendtime, format):
