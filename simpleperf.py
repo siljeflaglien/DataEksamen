@@ -44,7 +44,6 @@ def check_port(val):
 
 #Checking format in --format argument
 def check_format(val, format):
-    #Hvis det kommer inn i et Spesielt format, skal jeg konvertere det?
     val=val*8
     if val == 0 or format == 'B':
         return val
@@ -174,7 +173,7 @@ def handleServer(port, IP, format):
                 #print('Message: '+message+ '\n\n') #Printing messages/Packets got
                 
                 #If messange is BYE, connection is closing and we send back a BYE ACK
-                if(message == 'BYE'): 
+                if('BYE' in message): 
                     
                     #recieving --time the data sent, so that i can have the right interval in the results
                     rectime = connectionSocket.recv(1100).decode() 
@@ -330,7 +329,7 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     
     
     
-    time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message
+    #time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message #REMOVE
 
     socketClient.send(bye.encode()) #Sends BYE message
     #print('Sendt bye')
@@ -394,7 +393,7 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
                 #print('Message: '+message+ '\n\n') #Printing messages/Packets got
                 
                 #If messange is BYE, connection is closing and we send back a BYE ACK
-                if(message == 'BYE'): 
+                if('BYE' in message): 
                     
                     #recieving --time the data sent, so that i can have the right interval in the results
                     rectime = connectionSocket.recv(1100).decode() 
@@ -533,7 +532,7 @@ def handle_thread_client(serverIP, port, sendtime, format):
     
     
     
-    time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message
+    #time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message
 
     socketClient.send(bye.encode()) #Sends BYE message
     #print('Sendt bye')
