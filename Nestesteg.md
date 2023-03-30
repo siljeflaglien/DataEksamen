@@ -22,4 +22,6 @@ Det neste blir å:
 
         Må jeg sende alle pakkene fra client, før jeg kan starte opp connection nr 2? Hvordan blir det på client siden?
 
-* 
+* Endre fra bytes til bit. OBS! Pass på at du får ca 4000 mpbs når du kjører alle de forskjellige argumentene
+* Endre fra bye == til bye in message 
+

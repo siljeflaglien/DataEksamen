@@ -45,6 +45,7 @@ def check_port(val):
 #Checking format in --format argument
 def check_format(val, format):
     #Hvis det kommer inn i et Spesielt format, skal jeg konvertere det?
+    val=val*8
     if val == 0 or format == 'B':
         return val
     elif format == 'MB':
@@ -268,6 +269,8 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     print('\nnum is None:')
     print(num is None)
     print(num)
+
+    
     #If --interval not is specified
     if interval is None and num is None:
         #Sending data normal
@@ -558,6 +561,7 @@ def handle_thread_client(serverIP, port, sendtime, format):
     bandwidth = '{0:.2f}'.format(bandwidth)
     transferformat = '{0:.2f}'.format(transferformat)
 
+
     #Printig out "IP, Interval, Transfer and Bandwisth" table
 
     d = {str(serverIP)+":"+ str(port):["0.0 - "+str(sendtime)+'.0', str(transferformat)+' '+format , str(bandwidth)+' Mbps']}
@@ -565,9 +569,9 @@ def handle_thread_client(serverIP, port, sendtime, format):
     table=''
     for k, v in d.items():
         lang, perc, change = v
-        table=("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))+'\n'
+        print("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))
     #print('Adding the results to printing') #REMOVE
-    utskrift.append(table)
+    #utskrift.append(table)
     #print(table)
     #End of printing table
 
@@ -584,9 +588,9 @@ def thread_conn(serverIP, port, sendtime, format, interval, num_connections):
         #print('Pørver å lage ny connection') #REMOVE
         print('Client nr '+str(i)+' : '+str(serverIP)+":"+ str(port)+' connected with '+str(serverIP)+' port '+str(port))
         try:
-            client_thread=threading.Thread(target=handle_thread_client(serverIP, port, sendtime, format))
+            client_thread=threading.Thread(target=handle_thread_client, args=(serverIP, port, sendtime, format))
             client_thread.start()
-            client_thread.join()
+            #client_thread.join()
             #Printing confirmation to a connected server.
             #print('CLIENT THREAD: \n'+client_thread))
             #printing+=client_thread
