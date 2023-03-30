@@ -374,8 +374,6 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
                                             THREAD
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
-global utskrift
-utskrift=[]
 
 #Each thread will do this function.
 def handle_thread_server(connectionSocket, addr, IP, port,format):
@@ -393,7 +391,7 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
                 #print('Message: '+message+ '\n\n') #Printing messages/Packets got
                 
                 #If messange is BYE, connection is closing and we send back a BYE ACK
-                if('BYE' in message): 
+                if(message == 'BYE'): 
                     
                     #recieving --time the data sent, so that i can have the right interval in the results
                     rectime = connectionSocket.recv(1100).decode() 
@@ -468,7 +466,7 @@ def thread_server(serverIP, serverPort,format):
 
     serverSocket.listen(5) 
     print("socket is listening and ready to receive")
-    #print('Server is ready to recieve')
+   
 
     conn=1
     while True:
@@ -476,11 +474,9 @@ def thread_server(serverIP, serverPort,format):
         conn+=1
         #Establish the connection print('Ready to serve...') connectionSocket, addr =
         connectionSocket, addr = serverSocket.accept() #Establish the connection
-        print('Ready to serve ' , addr) #connected and ready
-        print('A simpleperf client with IP address:' + str(addr) +' is connected with server IP: '+ str(serverPort))
+        print('A simpleperf client with IP address:' + str(addr) +' is connected with server IP: '+ str(serverPort))#connected and ready
 
-        print('Oppretter ny thread, connection: '+str(addr))
-        print(connectionSocket)
+        print('\n\n')
         thread.start_new_thread(handle_thread_server, (connectionSocket, addr,serverIP,serverPort,format))
     
     
@@ -532,7 +528,7 @@ def handle_thread_client(serverIP, port, sendtime, format):
     
     
     
-    #time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message
+    time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message
 
     socketClient.send(bye.encode()) #Sends BYE message
     #print('Sendt bye')
@@ -579,7 +575,6 @@ def handle_thread_client(serverIP, port, sendtime, format):
 
 
 def thread_conn(serverIP, port, sendtime, format, interval, num_connections):
-    printing=utskrift
     print('\n')
     #client_thread_list=[]
     for i in range(num_connections):
@@ -608,9 +603,6 @@ def thread_conn(serverIP, port, sendtime, format, interval, num_connections):
     #for client_thread in client_thread_list:
     #    client_thread.join()
 
-    for results in printing:
-        print(results)
-    printing=[]
     exit(1) 
     
 
