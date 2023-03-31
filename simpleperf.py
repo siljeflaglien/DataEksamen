@@ -101,6 +101,7 @@ def check_num(val):
         raise argparse.ArgumentTypeError('You did not only get numbers from the string --num')
         #if not a number, sends error.
 
+    format = format*8 #From Byte to Bit
     if(format=='KB'):
         number=number*1000
     elif(format=='MB'):
@@ -169,12 +170,18 @@ def handleServer(port, IP, format):
 
             while True:
                
-                message = connectionSocket.recv(1100).decode() #recieving the packets
-                #print('Message: '+message+ '\n\n') #Printing messages/Packets got
+                message = connectionSocket.recv(1000).decode() #recieving the packets
                 
+            
                 #If messange is BYE, connection is closing and we send back a BYE ACK
-                if('BYE' in message): 
-                    
+                if "BYE" in message: 
+                    #end = seconds passed until receiving BYE
+                    end = time.time() - start
+
+                    #If endtime is less than 1, it get set to 1
+                    if end<1:
+                        end=1
+
                     #recieving --time the data sent, so that i can have the right interval in the results
                     rectime = connectionSocket.recv(1100).decode() 
                     
@@ -185,8 +192,8 @@ def handleServer(port, IP, format):
                     #Closing the client socket
                     connectionSocket.close()
                     
-                    #end = seconds passed until receiving BYE
-                    end = time.time() - start
+                    
+                    
                     break
                     
                 else:
@@ -237,7 +244,7 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     socketClient = socket(AF_INET, SOCK_STREAM) #Creating socket for client
     clientPort = port #Port number of the server
     host = serverIP #IP address of the server
-    bye = 'BYE' #for when we send the bye message
+    bye = "BYE" #for when we send the bye message
     sizesent=0 #sizesent
     sendtime=str(sendtime) #changing the seconds to a String to make it easier further down
 
@@ -289,8 +296,6 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     
     #If num is specified with how many bytes to send over. 
     else:
-       
-
          #Printing out the header row
         print('\n')
         print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Transfer','Bandwith'))
@@ -330,12 +335,13 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     
     
     #time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message #REMOVE
-
+  
     socketClient.send(bye.encode()) #Sends BYE message
-    #print('Sendt bye')
+    
+    time.sleep(0.3) #To separate BYE and the next message so they dont get sendt in the same message
     socketClient.send(sendtime.encode()) #Sends timeinterval, seconds packets got sendt.
-    message = socketClient.recv(1024).decode() #Recieving ACK message.
 
+    message = socketClient.recv(1024).decode() #Recieving ACK message.
     if(message == 'BYE ACK'):
         print('Exits...')
 
