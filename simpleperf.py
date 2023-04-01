@@ -44,7 +44,6 @@ def check_port(val):
 
 #Checking format in --format argument
 def check_format(val, format):
-    val=val*8
     if val == 0 or format == 'B':
         return val
     elif format == 'MB':
@@ -207,7 +206,9 @@ def handleServer(port, IP, format):
             #print('received B: '+str(datareceived)) #Data received in B
             #print('received MB: '+str(receivedMB)) #Data received in MB
             print('end: '+str(end)) #Printing End time, how long it used
-            rate = receivedMB/end #calculating the rate
+            rate = receivedMB/end #calculating the rate in MBps
+            rate = rate*8 # in mega bite per second
+
 
             transferformat=check_format(datareceived,format) #Changing to the chosen format from --format
 
@@ -287,14 +288,14 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
        
         print(sendtime+' seconds has passed')
         
-    #If --interval is specified with seconds
+    #If num is specified with how many bytes to send over. 
     elif num is not None:
         print('Sending wiht --num')
         while (sizesent+datasize <= num): #sending it for "sendtime"-amount of seonds
             socketClient.send(data.encode()) #Sending the data to the server
             sizesent+=datasize
     
-    #If num is specified with how many bytes to send over. 
+    #If --interval is specified with seconds
     else:
          #Printing out the header row
         print('\n')
@@ -353,7 +354,8 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     #Calculating bandwidth
     totaltduration=end-t #gives totalt duration of sending
     sizeMB=check_format(sizesent,'MB') #Gives the size sent in MB instead of B
-    bandwidth=sizeMB/totaltduration #The bandwith calculated in Mbps
+    bandwidth=sizeMB/totaltduration #The bandwith calculated in MBps
+    bandwidth=bandwidth*8 #The bandwidth in mega bite per second
     #print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB') # REMOVE
 
     transferformat=check_format(sizesent,format) #Changing to the chosen format from --format
@@ -425,7 +427,8 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
             #print('received B: '+str(datareceived)) #Data received in B #REMOVE
             #print('received MB: '+str(receivedMB)) #Data received in MB #REMOVE
             #print('end: '+str(end)) #Printing End time, how long it used #REMOVE
-            rate = receivedMB/end #calculating the rate
+            rate = receivedMB/end #calculating the rate in mega byte per second
+            rate = rate*8 #The rate in mega bite per second 
 
             transferformat=check_format(datareceived,format) #Changing to the chosen format from --format
             transferformat=int(transferformat)
@@ -549,7 +552,8 @@ def handle_thread_client(serverIP, port, sendtime, format):
     #Calculating bandwidth
     totaltduration=end-t #gives totalt duration of sending
     sizeMB=check_format(sizesent,'MB') #Gives the size sent in MB instead of B
-    bandwidth=sizeMB/totaltduration #The bandwith calculated in Mbps
+    bandwidth=sizeMB/totaltduration #The bandwith calculated in MBps
+    bandwidth=bandwidth*8 #The bandwidth in mega bite per second
     #print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB') # REMOVE
 
     transferformat=check_format(sizesent,format) #Changing to the chosen format from --format
