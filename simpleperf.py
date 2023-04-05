@@ -180,12 +180,12 @@ def handleServer(port, IP, format):
                     #If endtime is less than 1, it get set to 1
                     if end<1:
                         end=1
-
-                    #recieving --time the data sent, so that i can have the right interval in the results
-                    rectime = connectionSocket.recv(1100).decode() 
+                
+                    #recieving --time the data sent, so that i can have the right interval in the results #REMOVE
+                    #rectime = connectionSocket.recv(1100).decode()  #REMOVE
                     
                     #Sending ack message
-                    bye = 'BYE ACK' #Making the ack message
+                    bye = 'BYE:ACK' #Making the ack message
                     connectionSocket.send(bye.encode()) #Sending the ack
 
                     #Closing the client socket
@@ -205,20 +205,21 @@ def handleServer(port, IP, format):
             receivedMB = check_format(datareceived, 'MB') # from B -> MB
             #print('received B: '+str(datareceived)) #Data received in B
             #print('received MB: '+str(receivedMB)) #Data received in MB
-            print('end: '+str(end)) #Printing End time, how long it used
             rate = receivedMB/end #calculating the rate in MBps
             rate = rate*8 # in mega bite per second
 
 
             transferformat=check_format(datareceived,format) #Changing to the chosen format from --format
-
+    
             #sets them to only 2 decimals
             rate = '{0:.2f}'.format(rate)
             transferformat = '{0:.2f}'.format(transferformat)
+
+            end=int(end) #Making it to an integer without deciamls
            
             #Printig out "IP, Interval, Received and Rate" table
             print()
-            d = {str(IP)+":"+ str(port):["0.0 - "+str(rectime)+'.0', str(transferformat)+' '+format , str(rate)+' Mbps']}
+            d = {str(IP)+":"+ str(port):["0.0 - "+str(end)+'.0', str(transferformat)+' '+format , str(rate)+' Mbps']}
             print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Received','Rate'))
             for k, v in d.items():
                 lang, perc, change = v
@@ -250,7 +251,7 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     sendtime=str(sendtime) #changing the seconds to a String to make it easier further down
 
     #Making a data packet with 1000bytes
-    data='0'*951 #the byte size will be 1000 bytes with 951
+    data='0'*1000 #the byte size will be 1000 bytes with 951
     datasize=getsizeof(data)
     #print(str(getsizeof(data))+' bytes') #prints 1000 bytes (how many bytes the data packet is) #REMOVE
     #print(data)
@@ -271,11 +272,6 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
 
     #Marking the time (it is in seconds)
     t= time.time()
-    print('Interval none:')
-    print(interval is None)
-    print('\nnum is None:')
-    print(num is None)
-    print(num)
 
     
     #If --interval not is specified
@@ -339,11 +335,11 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
   
     socketClient.send(bye.encode()) #Sends BYE message
     
-    time.sleep(0.3) #To separate BYE and the next message so they dont get sendt in the same message
-    socketClient.send(sendtime.encode()) #Sends timeinterval, seconds packets got sendt.
+    #time.sleep(0.3) #To separate BYE and the next message so they dont get sendt in the same message
+    #socketClient.send(sendtime.encode()) #Sends timeinterval, seconds packets got sendt.
 
     message = socketClient.recv(1024).decode() #Recieving ACK message.
-    if(message == 'BYE ACK'):
+    if('BYE:ACK' in message):
         print('Exits...')
 
         #Closing and exiing 
@@ -390,7 +386,6 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
             #print('Prøver med connection: '+str(addr)) #REMOVE
             start = time.time() #Start time
             end = 0 #declaring the variable
-            rectime = 0
             datareceived=0
 
             while True:
@@ -399,13 +394,10 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
                 #print('Message: '+message+ '\n\n') #Printing messages/Packets got
                 
                 #If messange is BYE, connection is closing and we send back a BYE ACK
-                if('BYE' in message): 
-                    
-                    #recieving --time the data sent, so that i can have the right interval in the results
-                    rectime = connectionSocket.recv(1100).decode() 
+                if('BYE' in message):  
                     
                     #Sending ack message
-                    bye = 'BYE ACK' #Making the ack message
+                    bye = 'BYE:ACK' #Making the ack message
                     connectionSocket.send(bye.encode()) #Sending the ack
 
                     #Closing the client socket
@@ -431,14 +423,18 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
             rate = rate*8 #The rate in mega bite per second 
 
             transferformat=check_format(datareceived,format) #Changing to the chosen format from --format
+            
+            #Making them into whole integers
             transferformat=int(transferformat)
+            end=int(end)
+
             #sets them to only 2 decimals
             rate = '{0:.2f}'.format(rate)
             transferformat = '{0:.2f}'.format(transferformat)
             
             #Printig out "IP, Interval, Received and Rate" table
             print()
-            d = {str(IP)+":"+ str(port):["0.0 - "+str(rectime)+'.0', str(transferformat)+' '+format , str(rate)+' Mbps']}
+            d = {str(IP)+":"+ str(port):["0.0 - "+str(end)+'.0', str(transferformat)+' '+format , str(rate)+' Mbps']}
             print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Received','Rate'))
             for k, v in d.items():
                 lang, perc, change = v
@@ -498,7 +494,7 @@ def handle_thread_client(serverIP, port, sendtime, format):
     sendtime=str(sendtime) #changing the seconds to a String to make it easier further down
 
     #Making a data packet with 1000bytes
-    data='0'*951 #the byte size will be 1000 bytes with 951
+    data='0'*1000 #the byte size will be 1000 bytes with 951
     datasize=getsizeof(data)
     #print(str(getsizeof(data))+' bytes') #prints 1000 bytes (how many bytes the data packet is) #REMOVE
     #print(data)
@@ -534,11 +530,10 @@ def handle_thread_client(serverIP, port, sendtime, format):
     
     
     
-    time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message
 
     socketClient.send(bye.encode()) #Sends BYE message
     #print('Sendt bye')
-    socketClient.send(sendtime.encode()) #Sends timeinterval, seconds packets got sendt.
+
     message = socketClient.recv(1024).decode() #Recieving ACK message.
 
     if(message == 'BYE ACK'):
@@ -676,7 +671,6 @@ elif(args.thread):
     thread_server(args.serverip, args.port,args.format)
 
 elif(int(args.parallel) > 1):
-    print('Inne i args parallell')
     print('------------------------------------------------------------------------------------------')
     print('A simpleperf client connecting to server '+str(args.serverip)+', port '+str(args.port))
     print('------------------------------------------------------------------------------------------')
@@ -688,8 +682,6 @@ elif args.server:
     print('A simpleperf server is listening on port '+ str(args.port))
     print('------------------------------------------------------------------------------------------')
 
-    print('bind: '+str(args.bind))
-    print('port: '+str(args.port))
     handleServer(args.port,args.bind,args.format)
     
 elif args.client:
