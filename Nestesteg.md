@@ -35,3 +35,5 @@ sudo apt-get install openvswitch-switch
 sudo apt install mininet wireshark xterm iperf openvswitch-testcontroller 
 sudo apt install pip
 sudo pip install tabulate
+
+http://mininet.org/download/

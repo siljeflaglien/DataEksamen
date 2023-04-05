@@ -25,8 +25,8 @@ def check_IP(val):
 
 #Checking port in --port argument
 def check_port(val):
+
     #check if the port is a number.
-    #print('Val: '+ val) #REMOVE
     try:
         value = int(val)
     except ValueError:
@@ -38,7 +38,6 @@ def check_port(val):
         sys.exit
         #Only valid port between [1204-65535]. 
     
-    #print('Port Value: '+str(value)) #REMOVE
 
     return value #Returning the vallue because it was valid and so that it can be used
 
@@ -82,17 +81,16 @@ def check_num_conn(val):
     return value #returns value beacuse it was valid and so that it can be used. 
 
 def check_num(val):
-    #print('inne i check num') #REMOVE
     size=len(val) #Size of the string writen in
-    #print('Size: '+str(size)) #REMOVE
+
+    #Getting the format 'MB' or 'B' og 'KB'
     format = val[size-2]+val[size-1]
 
-    #Geeting the numbers out of 
+    #Getting the numbers out of 
     number=""
     for i in range(size-2): 
         number+=val[i]
     
-    print('Number: '+number)
     
     try:
         number=int(number)
@@ -181,8 +179,6 @@ def handleServer(port, IP, format):
                     if end<1:
                         end=1
                 
-                    #recieving --time the data sent, so that i can have the right interval in the results #REMOVE
-                    #rectime = connectionSocket.recv(1100).decode()  #REMOVE
                     
                     #Sending ack message
                     bye = 'BYE:ACK' #Making the ack message
@@ -253,8 +249,7 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     #Making a data packet with 1000bytes
     data='0'*1000 #the byte size will be 1000 bytes with 951
     datasize=getsizeof(data)
-    #print(str(getsizeof(data))+' bytes') #prints 1000 bytes (how many bytes the data packet is) #REMOVE
-    #print(data)
+
     
     #Connecting to Server
     try:
@@ -267,26 +262,20 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     #Printing confirmation to a connected server.
     print('Client connected with '+str(host)+' port '+str(clientPort))
 
-    #Printing header for interval printing. --interval
-    
-
-    #Marking the time (it is in seconds)
+    #Marking the starttime (it is in seconds)
     t= time.time()
 
     
-    #If --interval not is specified
+    #Sending data normal, no interval or num
     if interval is None and num is None:
-        #Sending data normal
         while(time.time() < t+int(sendtime)): #sending it for "sendtime"-amount of seonds
             socketClient.send(data.encode()) #Sending the data to the server
             sizesent+=getsizeof(data)
 
        
-        print(sendtime+' seconds has passed')
         
     #If num is specified with how many bytes to send over. 
     elif num is not None:
-        print('Sending wiht --num')
         while (sizesent+datasize <= num): #sending it for "sendtime"-amount of seonds
             socketClient.send(data.encode()) #Sending the data to the server
             sizesent+=datasize
@@ -322,7 +311,6 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
                 lastsize=sizesent
         
        
-        print(sendtime+' seconds has passed')
         print('---------------------------------------------------------------------------')
 
         
@@ -331,7 +319,6 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     
     
     
-    #time.sleep(0.3) #To separate BYE and datapackets so they dont get sendt in the same message #REMOVE
   
     socketClient.send(bye.encode()) #Sends BYE message
     
@@ -340,8 +327,6 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
 
     message = socketClient.recv(1024).decode() #Recieving ACK message.
     if('BYE:ACK' in message):
-        print('Exits...')
-
         #Closing and exiing 
         socketClient.close() 
     
@@ -352,10 +337,8 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     sizeMB=check_format(sizesent,'MB') #Gives the size sent in MB instead of B
     bandwidth=sizeMB/totaltduration #The bandwith calculated in MBps
     bandwidth=bandwidth*8 #The bandwidth in mega bite per second
-    #print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB') # REMOVE
 
     transferformat=check_format(sizesent,format) #Changing to the chosen format from --format
-    #print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB\nSize KB: '+str(transferformat)) #REMOVE
 
     #sets them to only 2 decimals
     bandwidth = '{0:.2f}'.format(bandwidth)
@@ -383,7 +366,6 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
 def handle_thread_server(connectionSocket, addr, IP, port,format):
     while True:
         try:
-            #print('Prøver med connection: '+str(addr)) #REMOVE
             start = time.time() #Start time
             end = 0 #declaring the variable
             datareceived=0
@@ -391,11 +373,12 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
             while True:
                
                 message = connectionSocket.recv(1100).decode() #recieving the packets
-                #print('Message: '+message+ '\n\n') #Printing messages/Packets got
                 
                 #If messange is BYE, connection is closing and we send back a BYE ACK
                 if('BYE' in message):  
-                    
+                    #end = seconds passed until receiving BYE
+                    end = time.time() - start
+
                     #Sending ack message
                     bye = 'BYE:ACK' #Making the ack message
                     connectionSocket.send(bye.encode()) #Sending the ack
@@ -403,22 +386,16 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
                     #Closing the client socket
                     connectionSocket.close()
                     
-                    #end = seconds passed until receiving BYE
-                    end = time.time() - start
-                    break
+                    break #Go out of the while
                     
                 else:
                     #If not BYE, we got a normal package and add the bytes to how much data we have received
                     datareceived+=getsizeof(message)
-                    #print( 'Message: '+message+'\n\n') #REMOVE
             
 
              # ----------------------- PRINTING RESULTS ----------------------------
             
             receivedMB = check_format(datareceived, 'MB') # from B -> MB
-            #print('received B: '+str(datareceived)) #Data received in B #REMOVE
-            #print('received MB: '+str(receivedMB)) #Data received in MB #REMOVE
-            #print('end: '+str(end)) #Printing End time, how long it used #REMOVE
             rate = receivedMB/end #calculating the rate in mega byte per second
             rate = rate*8 #The rate in mega bite per second 
 
@@ -435,15 +412,16 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
             #Printig out "IP, Interval, Received and Rate" table
             print()
             d = {str(IP)+":"+ str(port):["0.0 - "+str(end)+'.0', str(transferformat)+' '+format , str(rate)+' Mbps']}
-            print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Received','Rate'))
             for k, v in d.items():
                 lang, perc, change = v
                 print ("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))
             print()
             #End of printing table
 
+        #If the sockets listened to more connections, but no connections came, it goes in this except
         except IOError:
-            #If the sockets listened to more connections, but no connections came, it goes in this except
+            print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Received','Rate')) #When it has connected to the right amount of sockets, it will print the header. 
+            
             sys.exit()# And we terminate the listening for this connection. 
 
 
@@ -471,7 +449,6 @@ def thread_server(serverIP, serverPort,format):
 
     conn=1
     while True:
-        #print('Prøver på connection nr: '+str(conn))
         print()
         conn+=1
         #Establish the connection print('Ready to serve...') connectionSocket, addr =
@@ -483,8 +460,6 @@ def thread_server(serverIP, serverPort,format):
     
     
 def handle_thread_client(serverIP, port, sendtime, format):
-
-    #print('Kobler til neste thread!') #REMOVE
     
     socketClient = socket(AF_INET, SOCK_STREAM) #Creating socket for client
     clientPort = port #Port number of the server
@@ -495,9 +470,6 @@ def handle_thread_client(serverIP, port, sendtime, format):
 
     #Making a data packet with 1000bytes
     data='0'*1000 #the byte size will be 1000 bytes with 951
-    datasize=getsizeof(data)
-    #print(str(getsizeof(data))+' bytes') #prints 1000 bytes (how many bytes the data packet is) #REMOVE
-    #print(data)
 
     #Connecting to Server
     try:
@@ -507,12 +479,10 @@ def handle_thread_client(serverIP, port, sendtime, format):
         print ("Connection error")
         sys.exit()
 
-    #print('Client'+' : '+str(serverIP)+":"+ str(port)+' connected with '+str(serverIP)+' port '+str(port)) #REMOVE?
     
     #Marking the time (it is in seconds)
     t= time.time()
 
-    #print('Starter whilen') #REMOVE
     #A while who sends data
     while (time.time() < t+int(sendtime)): #sending it for "sendtime"-amount of seonds
         #print('Inne i whilen')
@@ -520,56 +490,41 @@ def handle_thread_client(serverIP, port, sendtime, format):
         sizesent+=getsizeof(data) #adding to bytes sent
 
 
-    
-    #print(sendtime+' seconds has passed') #REMOVE
-    #print('---------------------------------------------------------------------------') #REMOVE
-
         
     end=time.time() #time finished sending packets
 
-    
-    
-    
+
 
     socketClient.send(bye.encode()) #Sends BYE message
-    #print('Sendt bye')
 
     message = socketClient.recv(1024).decode() #Recieving ACK message.
 
     if(message == 'BYE ACK'):
-       #print('Exits...')
-
         #Closing and exiing 
         socketClient.close() 
-    #print
+    
 
-     # --------------------------------------- PRINTING RESULTS --------------------------------------------------
+    # --------------------------------------- PRINTING RESULTS --------------------------------------------------
     #Calculating bandwidth
     totaltduration=end-t #gives totalt duration of sending
     sizeMB=check_format(sizesent,'MB') #Gives the size sent in MB instead of B
     bandwidth=sizeMB/totaltduration #The bandwith calculated in MBps
     bandwidth=bandwidth*8 #The bandwidth in mega bite per second
-    #print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB') # REMOVE
 
     transferformat=check_format(sizesent,format) #Changing to the chosen format from --format
-    #print('Sizesendt: '+ str(sizesent)+' B\nSize MB: '+str(sizeMB)+' MB\nSize KB: '+str(transferformat)) #REMOVE
 
     #sets them to only 2 decimals
     bandwidth = '{0:.2f}'.format(bandwidth)
     transferformat = '{0:.2f}'.format(transferformat)
 
 
-    #Printig out "IP, Interval, Transfer and Bandwisth" table
+    #Printig out "IP, Interval, Transfer and Bandwidth" table
 
     d = {str(serverIP)+":"+ str(port):["0.0 - "+str(sendtime)+'.0', str(transferformat)+' '+format , str(bandwidth)+' Mbps']}
-    #print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Transfer','Bandwith')) #REMOVE?
-    table=''
     for k, v in d.items():
         lang, perc, change = v
         print("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))
-    #print('Adding the results to printing') #REMOVE
-    #utskrift.append(table)
-    #print(table)
+    
     #End of printing table
 
 
@@ -578,20 +533,15 @@ def handle_thread_client(serverIP, port, sendtime, format):
 
 def thread_conn(serverIP, port, sendtime, format, interval, num_connections):
     print('\n')
-    #client_thread_list=[]
     for i in range(num_connections):
+        i+=1 #to make it start at 1,2,3,4,5 and not 0,1,2,3,4 while printing
+
         #Connecting to Server
-        #print('Pørver å lage ny connection') #REMOVE
         print('Client nr '+str(i)+' : '+str(serverIP)+":"+ str(port)+' connected with '+str(serverIP)+' port '+str(port))
         try:
             client_thread=threading.Thread(target=handle_thread_client, args=(serverIP, port, sendtime, format))
             client_thread.start()
-            #client_thread.join()
-            #Printing confirmation to a connected server.
-            #print('CLIENT THREAD: \n'+client_thread))
-            #printing+=client_thread
-            #client_thread_list.append(client_thread)
-            
+    
             
             
         except:
@@ -602,8 +552,6 @@ def thread_conn(serverIP, port, sendtime, format, interval, num_connections):
     #Printing out the header row
     print('\n')
     print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Transfer','Bandwith'))
-    #for client_thread in client_thread_list:
-    #    client_thread.join()
 
     exit(1) 
     
@@ -619,28 +567,28 @@ def thread_conn(serverIP, port, sendtime, format, interval, num_connections):
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
 
-parser=argparse.ArgumentParser(description="Portifolio 1", epilog="end of help")
+parser=argparse.ArgumentParser(description="Portfolio 1", epilog="end of help")
 
 
 # ----------------------- Server --------------------------
-parser.add_argument('-s', '--server', action='store_true') 
-parser.add_argument('-b','--bind',type=check_IP, default='127.0.0.1') #input IP address
-parser.add_argument('-T','--thread',action='store_true')
+parser.add_argument('-s', '--server', action='store_true', help= 'If you run with -s you are running the server side') 
+parser.add_argument('-b','--bind',type=check_IP, default='127.0.0.1', help='IP address of the server') #input IP address
+parser.add_argument('-T','--thread',action='store_true',help='Add -T if you want to run a multithreading server')
 
 
 
 # ----------------------- Client --------------------------
-parser.add_argument('-c', '--client', action='store_true')
-parser.add_argument('-I','--serverip',type=check_IP, default='127.0.0.1') #input IP address
-parser.add_argument('-t', '--time',type=check_time, default=3)
-parser.add_argument('-i','--interval',type=int)
-parser.add_argument('-P','--parallel',type=check_num_conn, default=1)
-parser.add_argument('-n','--num',type=check_num, default=None)
+parser.add_argument('-c', '--client', action='store_true',  help= 'If you run with -c you are running the client side ')
+parser.add_argument('-I','--serverip',type=check_IP, default='127.0.0.1', help='IP address of the server') #input IP address
+parser.add_argument('-t', '--time',type=check_time, default=3, help='How many seconds you would like to send packets for')
+parser.add_argument('-i','--interval',type=int, help='Time intervall in seconds you want updated information printet.')
+parser.add_argument('-P','--parallel',type=check_num_conn, default=1, help='How many connections you want with server. Note: You have to run a multithread server with -T.')
+parser.add_argument('-n','--num',type=check_num, default=None, help='How much data do you wanna send over? Has to be a number followed by B, KB or MB, e.g. 100KB')
 
 
 # ------------------------ Both ---------------------------
-parser.add_argument('-p','--port',type=check_port, default=8088) #input Port number
-parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'), default='MB')
+parser.add_argument('-p','--port',type=check_port, default=8088, help='Port number of either the server or the client. the port must be an integer and in the range [1024,65535]') #input Port number
+parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'), default='MB', help='What format the results should be printet in. Options: B, KB, MB')
 
 
 
@@ -649,10 +597,8 @@ parser.add_argument('-f','--format', type=str, choices=('B','KB','MB'), default=
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
 args = parser.parse_args()
-#print('NUM: '+ str(args.num)) #REMOVE
 
     
-
 #If -s and -c is not specified
 if (not args.server and not args.client):
     print('Error: you must run either in server or client mode')
