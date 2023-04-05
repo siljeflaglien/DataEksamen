@@ -25,3 +25,13 @@ Det neste blir å:
 * Endre fra bytes til bit. OBS! Pass på at du får ca 4000 mpbs når du kjører alle de forskjellige argumentene
 * Endre fra bye == til bye in message 
 
+
+sudo apt/get install mininet
+sudo apt-get install xterm
+sudo apt-get install traceroute
+sudo apt-get install wireshark
+sudo apt-get install iperf3
+sudo apt-get install openvswitch-switch
+sudo apt install mininet wireshark xterm iperf openvswitch-testcontroller 
+sudo apt install pip
+sudo pip install tabulate
