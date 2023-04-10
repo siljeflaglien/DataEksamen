@@ -580,7 +580,7 @@ parser.add_argument('-T','--thread',action='store_true',help='Add -T if you want
 # ----------------------- Client --------------------------
 parser.add_argument('-c', '--client', action='store_true',  help= 'If you run with -c you are running the client side ')
 parser.add_argument('-I','--serverip',type=check_IP, default='127.0.0.1', help='IP address of the server') #input IP address
-parser.add_argument('-t', '--time',type=check_time, default=3, help='How many seconds you would like to send packets for')
+parser.add_argument('-t', '--time',type=check_time, default=25, help='How many seconds you would like to send packets for')
 parser.add_argument('-i','--interval',type=int, help='Time intervall in seconds you want updated information printet.')
 parser.add_argument('-P','--parallel',type=check_num_conn, default=1, help='How many connections you want with server. Note: You have to run a multithread server with -T.')
 parser.add_argument('-n','--num',type=check_num, default=None, help='How much data do you wanna send over? Has to be a number followed by B, KB or MB, e.g. 100KB')
