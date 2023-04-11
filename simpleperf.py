@@ -132,11 +132,78 @@ def print_table(ID, from_time , to_time, lastsize, sizesent, lasttime, nowtime,f
         print ("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))
     print()
     
+"""_________________________________________________________________________________________________________________________
+                                            THREAD SERVER
+    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+"""
+#Each thread will do this function.
+def handle_thread_server(connectionSocket, addr, IP, port,format):
+    while True:
+        try:
+            start = time.time() #Start time
+            end = 0 #declaring the variable
+            datareceived=0
+
+            while True:
+               
+                message = connectionSocket.recv(1100).decode() #recieving the packets
+                
+                #If messange is BYE, connection is closing and we send back a BYE ACK
+                if('BYE' in message):  
+                    #end = seconds passed until receiving BYE
+                    end = time.time() - start
+
+                    #Sending ack message
+                    bye = 'BYE:ACK' #Making the ack message
+                    connectionSocket.send(bye.encode()) #Sending the ack
+
+                    #Closing the client socket
+                    connectionSocket.close()
+                    
+                    break #Go out of the while
+                    
+                else:
+                    #If not BYE, we got a normal package and add the bytes to how much data we have received
+                    datareceived+=getsizeof(message)
+            
+
+             # ----------------------- PRINTING RESULTS ----------------------------
+            
+            receivedMB = check_format(datareceived, 'MB') # from B -> MB
+            rate = receivedMB/end #calculating the rate in mega byte per second
+            rate = rate*8 #The rate in mega bite per second 
+
+            transferformat=check_format(datareceived,format) #Changing to the chosen format from --format
+            
+            #Making them into whole integers
+            transferformat=int(transferformat)
+            end=int(end)
+
+            #sets them to only 2 decimals
+            rate = '{0:.2f}'.format(rate)
+            transferformat = '{0:.2f}'.format(transferformat)
+            
+            #Printig out "IP, Interval, Received and Rate" table
+            print()
+            d = {str(IP)+":"+ str(port):["0.0 - "+str(end)+'.0', str(transferformat)+' '+format , str(rate)+' Mbps']}
+            for k, v in d.items():
+                lang, perc, change = v
+                print ("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))
+            print()
+            #End of printing table
+
+        #If the sockets listened to more connections, but no connections came, it goes in this except
+        except IOError:
+            print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Received','Rate')) #When it has connected to the right amount of sockets, it will print the header. 
+            
+            sys.exit()# And we terminate the listening for this connection. 
+
 
 """________________________________________________________________________________________________
                                          HANDLE SERVER
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
+#A server that can handle multiple clients
 def handleServer(port, IP, format):
     serverSocket = socket(AF_INET, SOCK_STREAM) 
     serverPort = port #port number of the server
@@ -149,93 +216,27 @@ def handleServer(port, IP, format):
     except:
         print("Bind failed. Error : ")
     
-    #only one can connect
-    serverSocket.listen(1) 
-    print('Ready to receive... ')
+    serverSocket.listen(5) 
+    print('\nSocket is listening and ready to receive\n')
+    print('------------------------------------------------------------------------------------------')
+   
 
-    #sys.exit()
-
+    conn=1
     while True:
-        try:
-            connectionSocket, addr = serverSocket.accept() #Establish the connection
-            print('Ready to serve ' , addr) #connected and ready
-            print('A simpleperf client with IP address:' + str(addr) +' is connected with server IP: '+ str(serverPort))
-            
-            start = time.time() #Start time
-            end = 0 #declaring the variable
-            rectime = 0
+        print()
+        conn+=1
+        #Establish the connection print('Ready to serve...') connectionSocket, addr =
+        connectionSocket, addr = serverSocket.accept() #Establish the connection
+        print('A simpleperf client with IP address:' + str(addr) +' is connected with server IP: '+ str(serverPort))#connected and ready
 
-            while True:
-               
-                message = connectionSocket.recv(1000).decode() #recieving the packets
-                
-            
-                #If messange is BYE, connection is closing and we send back a BYE ACK
-                if "BYE" in message: 
-                    #end = seconds passed until receiving BYE
-                    end = time.time() - start
-
-                    #If endtime is less than 1, it get set to 1
-                    if end<1:
-                        end=1
-                
-                    
-                    #Sending ack message
-                    bye = 'BYE:ACK' #Making the ack message
-                    connectionSocket.send(bye.encode()) #Sending the ack
-
-                    #Closing the client socket
-                    connectionSocket.close()
-                    
-                    
-                    
-                    break
-                    
-                else:
-                    #If not BYE, we got a normal package and add the bytes to how much data we have received
-                    datareceived+=getsizeof(message)
-            
-
-             # ----------------------- PRINTING RESULTS ----------------------------
-            
-            receivedMB = check_format(datareceived, 'MB') # from B -> MB
-            #print('received B: '+str(datareceived)) #Data received in B
-            #print('received MB: '+str(receivedMB)) #Data received in MB
-            rate = receivedMB/end #calculating the rate in MBps
-            rate = rate*8 # in mega bite per second
-
-
-            transferformat=check_format(datareceived,format) #Changing to the chosen format from --format
-    
-            #sets them to only 2 decimals
-            rate = '{0:.2f}'.format(rate)
-            transferformat = '{0:.2f}'.format(transferformat)
-
-            end=int(end) #Making it to an integer without deciamls
-           
-            #Printig out "IP, Interval, Received and Rate" table
-            print()
-            d = {str(IP)+":"+ str(port):["0.0 - "+str(end)+'.0', str(transferformat)+' '+format , str(rate)+' Mbps']}
-            print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Received','Rate'))
-            for k, v in d.items():
-                lang, perc, change = v
-                print ("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))
-            print()
-            #End of printing table
-
-        except IOError:
-            #Send response message for file not found
-            feil = "404 File Not Found"
-            connectionSocket.send(feil.encode()) 
-        
-        #Closes socket, bye message has been receieved 
-        serverSocket.close()
-        sys.exit()#Terminate the program after sending the corresponding data
+        thread.start_new_thread(handle_thread_server, (connectionSocket, addr, IP,serverPort,format))
     
 
+    
+    
 
 """________________________________________________________________________________________________
-                                         HANDLE CLIENT
+                                         NORMAL CLIENT
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 """
 def handleClient(serverIP,port, sendtime, format, interval, num):
@@ -322,8 +323,6 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
   
     socketClient.send(bye.encode()) #Sends BYE message
     
-    #time.sleep(0.3) #To separate BYE and the next message so they dont get sendt in the same message
-    #socketClient.send(sendtime.encode()) #Sends timeinterval, seconds packets got sendt.
 
     message = socketClient.recv(1024).decode() #Recieving ACK message.
     if('BYE:ACK' in message):
@@ -357,107 +356,18 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     exit(1)
 
 
-"""________________________________________________________________________________________________
-                                            THREAD
-    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
-"""
 
-#Each thread will do this function.
-def handle_thread_server(connectionSocket, addr, IP, port,format):
-    while True:
-        try:
-            start = time.time() #Start time
-            end = 0 #declaring the variable
-            datareceived=0
-
-            while True:
-               
-                message = connectionSocket.recv(1100).decode() #recieving the packets
-                
-                #If messange is BYE, connection is closing and we send back a BYE ACK
-                if('BYE' in message):  
-                    #end = seconds passed until receiving BYE
-                    end = time.time() - start
-
-                    #Sending ack message
-                    bye = 'BYE:ACK' #Making the ack message
-                    connectionSocket.send(bye.encode()) #Sending the ack
-
-                    #Closing the client socket
-                    connectionSocket.close()
-                    
-                    break #Go out of the while
-                    
-                else:
-                    #If not BYE, we got a normal package and add the bytes to how much data we have received
-                    datareceived+=getsizeof(message)
-            
-
-             # ----------------------- PRINTING RESULTS ----------------------------
-            
-            receivedMB = check_format(datareceived, 'MB') # from B -> MB
-            rate = receivedMB/end #calculating the rate in mega byte per second
-            rate = rate*8 #The rate in mega bite per second 
-
-            transferformat=check_format(datareceived,format) #Changing to the chosen format from --format
-            
-            #Making them into whole integers
-            transferformat=int(transferformat)
-            end=int(end)
-
-            #sets them to only 2 decimals
-            rate = '{0:.2f}'.format(rate)
-            transferformat = '{0:.2f}'.format(transferformat)
-            
-            #Printig out "IP, Interval, Received and Rate" table
-            print()
-            d = {str(IP)+":"+ str(port):["0.0 - "+str(end)+'.0', str(transferformat)+' '+format , str(rate)+' Mbps']}
-            for k, v in d.items():
-                lang, perc, change = v
-                print ("{:<15} {:<12} {:<17} {:<10}".format(k, lang, perc, change))
-            print()
-            #End of printing table
-
-        #If the sockets listened to more connections, but no connections came, it goes in this except
-        except IOError:
-            print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Received','Rate')) #When it has connected to the right amount of sockets, it will print the header. 
-            
-            sys.exit()# And we terminate the listening for this connection. 
 
 
 #------------------------------------------------------------------------------------------------
 
 
-#Making a server that accepts multiple threads
-def thread_server(serverIP, serverPort,format):
-    #IP address of the server and port get sent in
-    
-    #Setting up TCP connection
-    serverSocket = socket(AF_INET, SOCK_STREAM) 
-     
 
-    try:
-        #Binder socket til en spesifikk IP-adresse og Port
-        serverSocket.bind((serverIP, serverPort)) 
-    except:
-        print("Bind failed. Error : ")
 
-    serverSocket.listen(5) 
-    print('\nSocket is listening and ready to receive\n')
-    print('------------------------------------------------------------------------------------------')
-   
-
-    conn=1
-    while True:
-        print()
-        conn+=1
-        #Establish the connection print('Ready to serve...') connectionSocket, addr =
-        connectionSocket, addr = serverSocket.accept() #Establish the connection
-        print('A simpleperf client with IP address:' + str(addr) +' is connected with server IP: '+ str(serverPort))#connected and ready
-
-        thread.start_new_thread(handle_thread_server, (connectionSocket, addr,serverIP,serverPort,format))
-    
-    
+"""__________________________________________________________________________________________________________________________
+                                            THREAD CLIENT
+    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+"""
     
 def handle_thread_client(serverIP, port, sendtime, format):
     
@@ -609,14 +519,7 @@ elif (args.server and args.client):
     print('Error: you can only run server OR client, not both.')
     sys.exit
 
-elif(args.thread):
-    print('------------------------------------------------------------------------------------------')
-    print('A simpleperf server is listening on port '+ str(args.port))
-    print('------------------------------------------------------------------------------------------')
-
-    thread_server(args.serverip, args.port,args.format)
-
-elif(int(args.parallel) > 1):
+elif(int(args.parallel) > 1 and args.client):
     print('------------------------------------------------------------------------------------------')
     print('A simpleperf client connecting to server '+str(args.serverip)+', port '+str(args.port))
     print('------------------------------------------------------------------------------------------')
