@@ -98,15 +98,27 @@ def check_num(val):
         raise argparse.ArgumentTypeError('You did not only get numbers from the string --num')
         #if not a number, sends error.
 
-    format = format*8 #From Byte to Bit
     if(format=='KB'):
         number=number*1000
     elif(format=='MB'):
         number=number*1000000
 
-    print('Value inne i check_num: '+str(number))
+    print('Number: '+str(number))
     return number
 
+def check_interval(val):
+    try:
+        value = int(val)
+    except ValueError:
+        raise argparse.ArgumentTypeError('expected an integer but you entered a string')
+        #if not a number, sends error.
+    
+    if not value>0:
+        print('The interval must be > 0')
+        sys.exit
+        exit(1)
+    
+    return value #returns value beacuse it was valid and so that it can be used. 
 #Printing one and one row of results in --interval
 def print_table(ID, from_time , to_time, lastsize, sizesent, lasttime, nowtime,format):
     
@@ -119,6 +131,7 @@ def print_table(ID, from_time , to_time, lastsize, sizesent, lasttime, nowtime,f
 
     #Bandwidth of the interval
     sizeMB = check_format(size,'MB') # changing into MB to calculate bandwidth
+    sizeMB= sizeMB*8 #Changing from byte to bit
     bandwidth=float(sizeMB)/float(interval_time) # Bandwidth
    
     #sets them to only 2 decimals
@@ -185,6 +198,8 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
             
             #Printig out "IP, Interval, Received and Rate" table
             print()
+            if receivedMB > 0:
+                print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Received','Rate'))
             d = {str(IP)+":"+ str(port):["0.0 - "+str(end)+'.0', str(transferformat)+' '+format , str(rate)+' Mbps']}
             for k, v in d.items():
                 lang, perc, change = v
@@ -194,7 +209,7 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
 
         #If the sockets listened to more connections, but no connections came, it goes in this except
         except IOError:
-            print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Received','Rate')) #When it has connected to the right amount of sockets, it will print the header. 
+            
             
             sys.exit()# And we terminate the listening for this connection. 
 
@@ -273,13 +288,15 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
             socketClient.send(data.encode()) #Sending the data to the server
             sizesent+=getsizeof(data)
 
-       
         
     #If num is specified with how many bytes to send over. 
     elif num is not None:
-        while (sizesent+datasize <= num): #sending it for "sendtime"-amount of seonds
+        print('sender med num: '+str(num))
+
+        while sizesent+datasize <= num : #sending it for "sendtime"-amount of seonds
             socketClient.send(data.encode()) #Sending the data to the server
-            sizesent+=datasize
+            sizesent+=1000
+        print('Sendt data: '+str(sizesent))
     
     #If --interval is specified with seconds
     else:
@@ -491,7 +508,7 @@ parser.add_argument('-T','--thread',action='store_true',help='Add -T if you want
 parser.add_argument('-c', '--client', action='store_true',  help= 'If you run with -c you are running the client side ')
 parser.add_argument('-I','--serverip',type=check_IP, default='127.0.0.1', help='IP address of the server') #input IP address
 parser.add_argument('-t', '--time',type=check_time, default=25, help='How many seconds you would like to send packets for')
-parser.add_argument('-i','--interval',type=int, help='Time intervall in seconds you want updated information printet.')
+parser.add_argument('-i','--interval',type=check_interval, help='Time intervall in seconds you want updated information printet.')
 parser.add_argument('-P','--parallel',type=check_num_conn, default=1, help='How many connections you want with server. Note: You have to run a multithread server with -T.')
 parser.add_argument('-n','--num',type=check_num, default=None, help='How much data do you wanna send over? Has to be a number followed by B, KB or MB, e.g. 100KB')
 
@@ -518,6 +535,7 @@ if (not args.server and not args.client):
 elif (args.server and args.client):
     print('Error: you can only run server OR client, not both.')
     sys.exit
+
 
 elif(int(args.parallel) > 1 and args.client):
     print('------------------------------------------------------------------------------------------')

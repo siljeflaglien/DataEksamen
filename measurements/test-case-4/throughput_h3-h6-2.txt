@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------------------
-A simpleperf client connecting to server 10.0.5.4, port 1234
+A simpleperf client connecting to server 10.0.5.4, port 1144
 ------------------------------------------------------------------------------------------
-Client connected with 10.0.5.4 port 1234
+Client connected with 10.0.5.4 port 1144
 
 ID              Interval     Transfer          Bandwith  
-10.0.5.4:1234   0.0 - 25.0   19.27 MB          6.15 Mbps 
+10.0.5.4:1144   0.0 - 25.0   30.41 MB          9.73 Mbps 
 
