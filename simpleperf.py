@@ -103,7 +103,6 @@ def check_num(val):
     elif(format=='MB'):
         number=number*1000000
 
-    print('Number: '+str(number))
     return number
 
 def check_interval(val):
@@ -159,12 +158,13 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
 
             while True:
                
-                message = connectionSocket.recv(1100).decode() #recieving the packets
+                message = connectionSocket.recv(1000).decode() #recieving the packets
                 
                 #If messange is BYE, connection is closing and we send back a BYE ACK
                 if('BYE' in message):  
                     #end = seconds passed until receiving BYE
                     end = time.time() - start
+                    datareceived= datareceived+getsizeof(message)
 
                     #Sending ack message
                     bye = 'BYE:ACK' #Making the ack message
@@ -177,11 +177,13 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
                     
                 else:
                     #If not BYE, we got a normal package and add the bytes to how much data we have received
-                    datareceived+=getsizeof(message)
+                    datareceived=datareceived + getsizeof(message)
+                    
             
 
              # ----------------------- PRINTING RESULTS ----------------------------
             
+
             receivedMB = check_format(datareceived, 'MB') # from B -> MB
             rate = receivedMB/end #calculating the rate in mega byte per second
             rate = rate*8 #The rate in mega bite per second 
@@ -190,7 +192,10 @@ def handle_thread_server(connectionSocket, addr, IP, port,format):
             
             #Making them into whole integers
             transferformat=int(transferformat)
-            end=int(end)
+            if end>1:
+                end=int(end)
+            else:
+                end=1
 
             #sets them to only 2 decimals
             rate = '{0:.2f}'.format(rate)
@@ -230,6 +235,7 @@ def handleServer(port, IP, format):
         serverSocket.bind((IP, serverPort)) 
     except:
         print("Bind failed. Error : ")
+        sys.exit()
     
     serverSocket.listen(5) 
     print('\nSocket is listening and ready to receive\n')
@@ -291,12 +297,12 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
         
     #If num is specified with how many bytes to send over. 
     elif num is not None:
-        print('sender med num: '+str(num))
 
-        while sizesent+datasize <= num : #sending it for "sendtime"-amount of seonds
+        while sizesent+datasize <= num : #sending it as long as it does no exceed the num size.
             socketClient.send(data.encode()) #Sending the data to the server
-            sizesent+=1000
-        print('Sendt data: '+str(sizesent))
+            sizesent+=datasize
+
+        print(sizesent)    
     
     #If --interval is specified with seconds
     else:
@@ -312,7 +318,7 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
         lastsize=0 #How many bytes was sent in total last interval
 
         #A while who sends data and sends prints results at the right interval
-        while (time.time() < int(t)+int(sendtime)): #sending it for "sendtime"-amount of seonds
+        while (time.time() < float(t)+float(sendtime)): #sending it for "sendtime"-amount of seonds
 
             socketClient.send(data.encode()) #Sending the data to the server
             sizesent+=getsizeof(data) #adding to bytes sent
@@ -327,12 +333,18 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
                 from_time+=interval #this was 2.0, but got now updated to 4.0 (if interval is 2 seconds)
                 lasttime=time.time()
                 lastsize=sizesent
+
+        print('---------------------------------------------------------------------------')
         
        
-        print('---------------------------------------------------------------------------')
+        
+
 
         
     end=time.time() #time finished sending packets
+
+    #Method that print one and one row of data results
+    
 
     
     
@@ -354,11 +366,16 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
     bandwidth=sizeMB/totaltduration #The bandwith calculated in MBps
     bandwidth=bandwidth*8 #The bandwidth in mega bite per second
 
+
     transferformat=check_format(sizesent,format) #Changing to the chosen format from --format
 
     #sets them to only 2 decimals
     bandwidth = '{0:.2f}'.format(bandwidth)
     transferformat = '{0:.2f}'.format(transferformat)
+    if totaltduration>1:
+        totaltduration=int(totaltduration)
+    else:
+        totaltduration=1
 
     #Printig out "IP, Interval, Transfer and Bandwisth" table
     print()
