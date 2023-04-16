@@ -36,16 +36,26 @@ To invoke the client side, these are the available options:
 ## Tests to generate data
 
 To run simpleperf with default options:
+
 `python3 simpleperf -s`
 
 `python3 simpleperf -c`
 
--
-For connection to a sepcified port or IP-address
+--
+For connection to a sepcified port or IP-address:
 
 `python3 simpleperf -s -b <server-IP -p <server_port>`
 
 `python3 simpleperf -c -I <server-IP -p <server_port>`
+
+--
+To send for 10 seconds and printing out statistics every 2 seconds:
+
+`python3 simpleperf -s`
+
+`python3 simpleperf -c -t 10 -i 2`
+
+--
 
 python3 simpleperf.py -s -p 8889 -f KB
 python3 simpleperf.py -c -p 8889 -n 10KB -f KB:
