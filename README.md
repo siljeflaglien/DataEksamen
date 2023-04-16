@@ -35,11 +35,13 @@ To invoke the client side, these are the available options:
 
 ## Tests to generate data
 
-To run simpleperf with default options:
+#### To run simpleperf with default options:
 
 `python3 simpleperf -s`
 
 `python3 simpleperf -c`
+
+
 
 #### For connection to a sepcified port or IP-address:
 
@@ -47,13 +49,39 @@ To run simpleperf with default options:
 
 `python3 simpleperf -c -I <server-IP -p <server_port>`
 
-#### To send for 10 seconds and printing out statistics every 2 seconds:
+
+
+#### To send for 10 seconds and printing out statistics every 2 second with --time and --intervall
 
 `python3 simpleperf -s`
 
 `python3 simpleperf -c -t 10 -i 2`
 
-####
+
+
+#### Sending 10MB of data instead of seconds with --num
+
+`python3 simpleperf -s`
+
+`python3 simpleperf -c -n 10MB`
+
+
+
+#### Running client with --parallel
+
+`python3 simpleperf -s`
+
+`python3 simpleperf -c -P 3`
+
+This will make 3 connections who run at the same time. 
+
+#### Changing the format with -f 
+
+`python3 simpleperf -s`
+
+`python3 simpleperf -c -f KB`
+
+The format for the transfer figure will now be calculated to KB and not MB
 
 python3 simpleperf.py -s -p 8889 -f KB
 python3 simpleperf.py -c -p 8889 -n 10KB -f KB:
