@@ -5,6 +5,7 @@ This is a tool for measuring network throughput which could open up a TCP connec
 To open a connection, you have to run this script in two modes; firstly in server mode, then in client mode. 
 
 ---
+### Server
 To invoke the server side, these are the available options:
 | flag | long flag | input | type | Description |
 | ----- | ------------- | -------- | -------- | -------- |
@@ -15,6 +16,7 @@ To invoke the server side, these are the available options:
 
 
 ---
+### Client
 
 To invoke the client side, these are the available options:
 
@@ -28,6 +30,9 @@ To invoke the client side, these are the available options:
 |-i|--interval|z|integer|Print statistics per z second|
 |-P|   --parallel  |no_of_conn|integer|Creates parallel connections to connect to the server and send data - it must be 1 and the max value should be 5 - default:1|
 |-n|--num|no_of_bytes|string|Transfer number of bytes specfied by -n flag, it should be either in B, KB or MB|
+
+---
+
 
 python3 simpleperf.py -s -p 8889 -f KB
 python3 simpleperf.py -c -p 8889 -n 10KB -f KB:
