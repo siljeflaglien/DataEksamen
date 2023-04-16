@@ -41,15 +41,13 @@ To run simpleperf with default options:
 
 `python3 simpleperf -c`
 
-####
-For connection to a sepcified port or IP-address:
+#### For connection to a sepcified port or IP-address:
 
 `python3 simpleperf -s -b <server-IP -p <server_port>`
 
 `python3 simpleperf -c -I <server-IP -p <server_port>`
 
-####
-To send for 10 seconds and printing out statistics every 2 seconds:
+#### To send for 10 seconds and printing out statistics every 2 seconds:
 
 `python3 simpleperf -s`
 
