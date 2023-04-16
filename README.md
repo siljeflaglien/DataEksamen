@@ -36,8 +36,9 @@ To invoke the client side, these are the available options:
 ## Tests to generate data
 
 To run simpleperf with default options:
-´python3 simpleperf -s´
-´python 3 simpleperf -c´
+`python3 simpleperf -s`
+`python 3 simpleperf -c`
+
 python3 simpleperf.py -s -p 8889 -f KB
 python3 simpleperf.py -c -p 8889 -n 10KB -f KB:
 ID              Interval     Transfer          Bandwith  
