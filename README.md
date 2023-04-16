@@ -7,7 +7,7 @@ To open a connection, you have to run this script in two modes; firstly in serve
 ---
 To invoke the server side, these are the available options:
 | flag | long flag | input | type | Description |
-| -------- | -------- | -------- | -------- | -------- |
+| ----- | ------------- | -------- | -------- | -------- |
 | -s | --server |   | (boolean) | enable the server mode |
 | -b | --bind | ip address | string | Allows to select the ip address of the server’s interface where the client should connect. It must be in the dotted decimal notation format, e.g. 10.0.0.2. Default: 127.0.0.1 |
 | -p | -port | port number | integer | llows to use select port number on which the server should listen; the port must be an integer and in the range [1024, 65535], default: 8088 |
