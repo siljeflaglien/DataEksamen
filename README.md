@@ -47,7 +47,7 @@ To invoke the client side, these are the available options:
 
 `python3 simpleperf -s -b <server-IP -p <server_port>`
 
-`python3 simpleperf -c -I <server-IP -p <server_port>`
+`python3 simpleperf -c -I <server-IP -p <server_port>`      
 
 
   
@@ -55,7 +55,7 @@ To invoke the client side, these are the available options:
 
 `python3 simpleperf -s`
 
-`python3 simpleperf -c -t 10 -i 2`
+`python3 simpleperf -c -t 10 -i 2`      
   
 
 
@@ -72,7 +72,7 @@ To invoke the client side, these are the available options:
 
 `python3 simpleperf -c -P 3`
 
-This will make 3 connections who run at the same time. 
+This will make 3 connections who run at the same time.   
 
 #### Changing the format with -f 
 
@@ -80,7 +80,7 @@ This will make 3 connections who run at the same time.
 
 `python3 simpleperf -c -f KB`
   
-The format for the transfer figure will now be calculated to KB and not MB
+The format for the transfer figure will now be calculated to KB and not MB  
 
 python3 simpleperf.py -s -p 8889 -f KB
 python3 simpleperf.py -c -p 8889 -n 10KB -f KB:
