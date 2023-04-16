@@ -74,7 +74,7 @@ To invoke the client side, these are the available options:
 
 This will make 3 connections who run at the same time.   
 
-----------------
+         
 
 #### Changing the format with -f 
 
@@ -87,12 +87,8 @@ The format for the transfer figure will now be calculated to KB and not MB
 
 ## Note
 
-- You cannot run 
-
-python3 simpleperf.py -s -p 8889 -f KB
-python3 simpleperf.py -c -p 8889 -n 10KB -f KB:
-ID              Interval     Transfer          Bandwith  
-127.0.0.1:8889  0.0 - 5.0    10.00 KB          211.83 Mbps
-
-Runs with sudo mn --custom portfolio-topology.py --topo topo
+- You cannot run --client and --server at the same time
+- Either --client or --server has to be specified 
+- --num and --time does not work together  
+- All of the arguments are optional, so you can enter them in the order you want
 
