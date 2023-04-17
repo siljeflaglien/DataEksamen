@@ -379,7 +379,7 @@ def handleClient(serverIP,port, sendtime, format, interval, num):
 
     #Printig out "IP, Interval, Transfer and Bandwisth" table
     print()
-    d = {str(serverIP)+":"+ str(port):["0.0 - "+str(sendtime)+'.0', str(transferformat)+' '+format , str(bandwidth)+' Mbps']}
+    d = {str(serverIP)+":"+ str(port):["0.0 - "+str(totaltduration)+'.0', str(transferformat)+' '+format , str(bandwidth)+' Mbps']}
     print ("{:<15} {:<12} {:<17} {:<10}".format('ID','Interval','Transfer','Bandwith'))
     for k, v in d.items():
         lang, perc, change = v
