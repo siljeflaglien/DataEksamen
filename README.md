@@ -90,5 +90,6 @@ The format for the transfer figure will now be calculated to KB and not MB
 - You cannot run --client and --server at the same time
 - Either --client or --server has to be specified 
 - --num and --time does not work together  
+- you cannot run --interval and --parallel at the same time
 - All of the arguments are optional, so you can enter them in the order you want
 
